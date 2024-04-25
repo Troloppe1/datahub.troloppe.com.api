@@ -17,3 +17,6 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+/app/Console/Commands/DeployProdEnv.php
+/docker-compose.yml
