@@ -20,11 +20,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::controller(AuthController::class)->group(function(){
-    Route::post('/login', 'login');
-    Route::delete('/logout', 'logout')->middleware('auth:sanctum');
+Route::controller(AuthController::class)->prefix('auth/')->name('api-auth.')->group(function(){
+    Route::post('/verify-user', "verifyUser")->name('verify-user');
+    Route::post('/login', 'login')->name('login');
+    Route::delete('/logout', 'logout')->middleware('auth:sanctum')->name('logout');
 
-    Route::post('/generate-otp', 'generateOTP')->middleware('throttle:gen_otp');
-    Route::post('/verify-otp', 'verifyOTP');
+    Route::post('/generate-otp', 'generateOTP')->middleware('throttle:gen_otp')->name('generate-otp');
+    Route::post('/verify-otp', 'verifyOTP')->name('verify-otp');
+    Route::post('/change-password', 'changePassword')->name('change-password');
 });
 
