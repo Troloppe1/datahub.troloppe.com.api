@@ -12,21 +12,21 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 class AuthController extends Controller
 {
 
-    public function __construct(private AuthService $authService){}
+    public function __construct(private AuthService $authService){
+        $this->middleware('user_email_found')->only(['verifyUser', 'sendOTPMail']);
+        $this->middleware('throttle:gen_otp')->only('sendOTPMail');
+
+    }
     
     /**
-     * Verifies a user based on email and returns a JSON response
-     * containing a boolean value
+     * Verifies a user based on email and returns HTTP status 200 if found
+     * and 404 if not from the middleware
      *
-     * @param AuthRequest $authRequest
      * @return JsonResponse
      */
-    public function verifyUser(AuthRequest $authRequest): JsonResponse
+    public function verifyUser(): JsonResponse
     {
-        $authRequest->validated();
-        return response()->json([
-            "isVerified" => $this->authService->verifyUserByEmail($authRequest->email)
-        ]);
+        return response()->json(['message' => 'User exists'], HttpResponse::HTTP_OK);
     }
     /**
      * Login a user
@@ -61,23 +61,15 @@ class AuthController extends Controller
     /**
      * Generates OTP and sends same to provided email
      *
-     * @param string $email
+     * @param AuthRequest $authRequest
      * @return void
      */
-    public function generateOTP(AuthRequest $authRequest){
-        $authRequest->validated();
-
-        try {   
-            $this->authService->generateOTP($authRequest->email);
-            return response()->json([
-                'message' => 'OTP created successfully.'
-            ], HttpResponse::HTTP_CREATED);
-        } catch(Exception $e){
-            return response()->json([
-                'message' => $e->getMessage()
-            ], $e->getCode());
-        }        
-    }
+    public function sendOTPMail(Request $request): JsonResponse
+    {
+        $this->authService->sendOTPMail($request);
+        return response()->json(['message' => 'OTP created successfully.'],  HttpResponse::HTTP_CREATED);
+    } 
+    
 
     /**
      * Verify OTP and returns response containing unique token and expiration time in seconds

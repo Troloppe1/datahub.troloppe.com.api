@@ -28,6 +28,7 @@ trait WithOtp
         }
 
         if (hasTimeExpired($this->otp->created_at)){
+            $this->deleteOTP();
             throw new Exception('Expired OTP. Please request a new one.');
         }
 

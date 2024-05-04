@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use Illuminate\Http\Request;
 use App\Jobs\SendLoginOtpMailJob;
 use App\Models\User;
 use Carbon\Carbon;
@@ -15,18 +16,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthService{
     
-    /**
-     * Verifies if a user is registered on the app's database
-     * using his/her email
-     *
-     * @param string $email
-     * @return boolean
-     */
-    public function verifyUserByEmail(string $email): bool
-    {
-        $user = User::where(['email' => $email])->first();
-        return $user ? true : false;
-    }
     /**
      * Log in operation
      *
@@ -56,21 +45,15 @@ class AuthService{
     /**
      * Generates OTP and sends same as mail
      *
-     * @param string $email
+     * @param Request $request
      * @return void
      */
-    public function generateOTP(string $email): void
+    public function sendOTPMail(Request $request): void
     {
-        $user = User::where(['email' => $email])->first();
-
-        if (!$user) {
-            throw new Exception('User does not exist.', Response::HTTP_NOT_FOUND);
-        }
-        
-        $user->createOTP();
+        $request->user->createOTP();
 
         // Send Login OTP Mail to user
-        dispatch(new SendLoginOtpMailJob($user));
+        dispatch(new SendLoginOtpMailJob($request->user));
     }
 
     /**
