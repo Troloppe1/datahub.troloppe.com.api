@@ -13,8 +13,8 @@ class AuthController extends Controller
 {
 
     public function __construct(private AuthService $authService){
-        $this->middleware('user_email_found')->only(['verifyUser', 'sendOTPMail']);
-        $this->middleware('throttle:gen_otp')->only('sendOTPMail');
+        $this->middleware('user_email_found')->only(['sendOTPMail', 'verifyUser']);
+        $this->middleware('throttle_otp')->only('sendOTPMail');
 
     }
     

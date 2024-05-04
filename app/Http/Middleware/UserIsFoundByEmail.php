@@ -18,9 +18,9 @@ class UserIsFoundByEmail
     {
 
         $user = User::where(['email' => $request->email])->first();
-        $request->user = $user;
 
         if ($user) {
+            $request->user = $user;
             return $next($request);
         } else {
             return response()->json([
