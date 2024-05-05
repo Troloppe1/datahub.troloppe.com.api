@@ -25,7 +25,7 @@ Route::controller(AuthController::class)->prefix('auth/')->name('api-auth.')->gr
     Route::post('/login', 'login')->name('login');
     Route::delete('/logout', 'logout')->middleware('auth:sanctum')->name('logout');
 
-    Route::post('/send-otp', 'sendOTPMail')->name('generate-otp');
+    Route::post('/send-password-reset-otp', 'sendPasswordResetOTPMail')->name('send-password-reset-otp');
     Route::post('/verify-otp', 'verifyOTP')->name('verify-otp');
     Route::post('/change-password', 'changePassword')->name('change-password');
 });

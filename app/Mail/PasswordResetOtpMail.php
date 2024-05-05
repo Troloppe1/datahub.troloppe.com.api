@@ -9,11 +9,11 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class LoginOtpMail extends Mailable
+class PasswordResetOtpMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public string $title = 'Login OTP';
+    public string $title = 'Password Reset OTP';
 
     /**
      * Create a new message instance.
@@ -29,7 +29,7 @@ class LoginOtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Login OTP',
+            subject: 'Password Reset OTP',
         );
     }
 
@@ -39,7 +39,7 @@ class LoginOtpMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mails.login-otp',
+            view: 'mails.password-reset-otp',
         );
     }
 

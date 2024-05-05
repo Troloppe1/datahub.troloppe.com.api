@@ -2,7 +2,7 @@
 
 namespace App\Services;
 use Illuminate\Http\Request;
-use App\Jobs\SendLoginOtpMailJob;
+use App\Jobs\SendPasswordResetOtpMailJob;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -53,7 +53,7 @@ class AuthService{
         $request->user->createOTP();
 
         // Send Login OTP Mail to user
-        dispatch(new SendLoginOtpMailJob($request->user));
+        dispatch(new SendPasswordResetOtpMailJob($request->user));
     }
 
     /**

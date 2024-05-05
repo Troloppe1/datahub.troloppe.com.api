@@ -13,7 +13,7 @@ class AuthController extends Controller
 {
 
     public function __construct(private AuthService $authService){
-        $this->middleware('user_email_found')->only(['sendOTPMail', 'verifyUser']);
+        $this->middleware('user_email_found')->only(['sendPasswordResetOTPMail', 'verifyUser']);
     }
     
     /**
@@ -62,7 +62,7 @@ class AuthController extends Controller
      * @param AuthRequest $authRequest
      * @return void
      */
-    public function sendOTPMail(Request $request): JsonResponse
+    public function sendPasswordResetOTPMail(Request $request): JsonResponse
     {
         $this->authService->sendOTPMail($request);
         return response()->json(['message' => 'OTP created successfully.'],  HttpResponse::HTTP_CREATED);
