@@ -14,6 +14,7 @@ class AuthController extends Controller
 
     public function __construct(private AuthService $authService){
         $this->middleware('user_email_found')->only(['sendPasswordResetOTPMail', 'verifyUser']);
+        $this->middleware('throttle_OTP')->only(['sendPasswordResetOTPMail']);
     }
     
     /**
