@@ -51,4 +51,12 @@ class User extends Authenticatable
     public function otp(): HasOne{
         return $this->hasOne(Otp::class);
     }
+
+    public function getUserData() {
+        return [
+            "id" => $this->id,
+            "name" => $this->name,
+            "email" => $this->email
+        ];
+    }
 }

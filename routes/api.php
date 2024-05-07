@@ -23,10 +23,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::controller(AuthController::class)->prefix('auth/')->name('api-auth.')->group(function(){
     Route::post('/verify-user', "verifyUser")->name('verify-user');
     Route::post('/login', 'login')->name('login');
-    Route::delete('/logout', 'logout')->middleware('auth:sanctum')->name('logout');
-
+    
     Route::post('/send-password-reset-otp', 'sendPasswordResetOTPMail')->name('send-password-reset-otp');
     Route::post('/verify-otp', 'verifyOTP')->name('verify-otp');
     Route::post('/change-password', 'changePassword')->name('change-password');
+    
+    Route::middleware('auth:sanctum')->group(function(){
+        Route::get('/current-user', 'currentUser')->name('current-user');
+        Route::delete('/logout', 'logout')->name('logout');
+    });
 });
 

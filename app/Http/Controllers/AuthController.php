@@ -18,6 +18,17 @@ class AuthController extends Controller
     }
     
     /**
+     * Retrieves the properties of a currently authenticated user
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function currentUser(Request $request): JsonResponse
+    {
+        return response()->json($request->user()->getUserData());
+    }
+
+    /**
      * Verifies a user based on email and returns HTTP status 200 if found
      * and 404 if not from the middleware
      *
@@ -68,7 +79,6 @@ class AuthController extends Controller
         $this->authService->sendOTPMail($request);
         return response()->json(['message' => 'OTP created successfully.'],  HttpResponse::HTTP_CREATED);
     } 
-    
 
     /**
      * Verify OTP and returns response containing unique token and expiration time in seconds
