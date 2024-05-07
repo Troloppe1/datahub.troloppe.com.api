@@ -16,7 +16,10 @@ class UserIsFoundByEmail
      */
     public function handle(Request $request, Closure $next): Response
     {
-
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+        
         $user = User::where(['email' => $request->email])->first();
 
         if ($user) {

@@ -26,7 +26,7 @@ class AuthRequest extends FormRequest
             'email' => 'required|email',
             'password' => $this->routeIs('api-auth.login') ? 'required' : '',
             'otp' => $this->routeIs('api-auth.verify-otp') ? ['required', 'string', 'size:6', new IsNumeric] : '',
-            'newPassword' => $this->routeIs('api-auth.change-password') ? 'required|string|size:8' : '',
+            'newPassword' => $this->routeIs('api-auth.change-password') ? 'required|string|min:8' : '',
             'oldPassword' => $this->routeIs('api-auth.change-password') ? 'required_without_all:resetPasswordToken' : '',
             'resetPasswordToken' => $this->routeIs('api-auth.change-password') ? 'required_without_all:oldPassword' : '',
         ];
