@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum')->get('/auth/user', function (Request $request) {
+    return $request->user()->getUserData();
 });
 
 
@@ -29,7 +29,6 @@ Route::controller(AuthController::class)->prefix('auth/')->name('api-auth.')->gr
     Route::post('/change-password', 'changePassword')->name('change-password');
     
     Route::middleware('auth:sanctum')->group(function(){
-        Route::get('/current-user', 'currentUser')->name('current-user');
         Route::delete('/logout', 'logout')->name('logout');
     });
 });

@@ -21,4 +21,4 @@ yarn-error.log
 /app/Console/Commands/DeployProdEnv.php
 /docker-compose.yml
 /*.rest
-docker-compose.yml
+~docker-compose.yml

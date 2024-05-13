@@ -16,17 +16,6 @@ class AuthController extends Controller
         $this->middleware('user_email_found')->only(['sendPasswordResetOTPMail', 'verifyUser']);
         $this->middleware('throttle_OTP')->only(['sendPasswordResetOTPMail']);
     }
-    
-    /**
-     * Retrieves the properties of a currently authenticated user
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function currentUser(Request $request): JsonResponse
-    {
-        return response()->json($request->user()->getUserData());
-    }
 
     /**
      * Verifies a user based on email and returns HTTP status 200 if found
