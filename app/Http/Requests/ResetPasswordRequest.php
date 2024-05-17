@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\IsNumeric;
 use Illuminate\Foundation\Http\FormRequest;
 
-class AuthRequest extends FormRequest
+class ResetPasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,8 +22,9 @@ class AuthRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
-            'password' => $this->routeIs('api-auth.login') ? 'required' : '',
+            "email" => "required",
+            "token" => "required",
+            "password" => "required|min:8|confirmed"
         ];
     }
 }

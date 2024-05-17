@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Services;
+
+use App\Mail\PasswordResetOtpMail;
 use Illuminate\Http\Request;
 use App\Jobs\SendPasswordResetOtpMailJob;
 use App\Models\User;
@@ -9,13 +11,15 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 
-class AuthService{
-    
+class AuthService
+{
+
     /**
      * Log in operation
      *
@@ -24,7 +28,7 @@ class AuthService{
      */
     public function login(array $creds): ?string
     {
-        if (Auth::attempt($creds)){
+        if (Auth::attempt($creds)) {
             $user = Auth::user();
             $token = $user->createToken('auth-api-token')->plainTextToken;
             return $token;
@@ -50,10 +54,11 @@ class AuthService{
      */
     public function sendOTPMail(Request $request): void
     {
-        $request->user->createOTP();
+        $user = $request->user;
+        $otp = $user->createOTP();
 
         // Send Login OTP Mail to user
-        dispatch(new SendPasswordResetOtpMailJob($request->user));
+        Mail::to($user->email)->queue(new PasswordResetOtpMail($user->name, $otp));
     }
 
     /**
@@ -63,7 +68,7 @@ class AuthService{
      * @param string $otp
      * @return void
      */
-    public function verifyOTP(string $email, string $otp) 
+    public function verifyOTP(string $email, string $otp)
     {
         $user = User::where(['email' => $email])->first();
 
@@ -74,7 +79,7 @@ class AuthService{
         try {
             $user->verifyOTP($otp);
             $user->deleteOTP();
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             $user->deleteOTP();
             throw new Exception($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
@@ -92,7 +97,7 @@ class AuthService{
     {
         $expires_at = Carbon::now()->addMinutes($min);
         $token = Str::random(60);
-        Cache::put($email.'_reset_token', $token, $expires_at);
+        Cache::put($email . '_reset_token', $token, $expires_at);
         return $token;
     }
 
@@ -105,46 +110,23 @@ class AuthService{
      * @param string $resetPasswordToken
      * @return void
      */
-    public function changePassword(string $email, string $newPassword, string $oldPassword = '', string $resetPasswordToken = '')
+    public function changePassword(string $email, string $oldPassword, string $newPassword)
     {
-        if ($oldPassword && $resetPasswordToken){
-            throw new InvalidArgumentException("Old Password and reset password token can't be supplied at thesame time", 400);
-        }
         $user = User::where(['email' => $email])->first();
 
         if (!$user) {
             throw new ModelNotFoundException('User not found.', 404);
         }
 
-        if ($oldPassword){
-            if ($oldPassword === $newPassword){
-                throw new InvalidArgumentException("Old and new Passwords can't be thesame", 400);
-            }
-
-            if (Hash::check($oldPassword, $user->password)) {
-                $user->password = $newPassword;
-                $user->save();
-            }
-            else {
-                throw new InvalidArgumentException('Old password is incorrect.', 401);
-            }
+        if ($oldPassword === $newPassword) {
+            throw new InvalidArgumentException("Old and new Passwords can't be thesame", 400);
         }
-        elseif($resetPasswordToken){
-            $cachedToken = Cache::get($email.'_reset_token');
 
-            if($cachedToken) {
-                if ($cachedToken === $resetPasswordToken){
-                    $user->password = $newPassword;
-                    $user->save();
-                } else {
-                    throw new InvalidArgumentException('Reset Password Token is invalid.', 400);
-                }
-            } else {
-                throw new Exception('Reset Password Token has expired.', 400);
-            }
-        }
-        else {
-            throw new Exception('Invalid input provided', 400);
+        if (Hash::check($oldPassword, $user->password)) {
+            $user->password = $newPassword;
+            $user->save();
+        } else {
+            throw new InvalidArgumentException('Old password is incorrect.', 401);
         }
     }
 }

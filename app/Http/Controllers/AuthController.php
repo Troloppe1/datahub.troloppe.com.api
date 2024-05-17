@@ -3,18 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AuthRequest;
+use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\ResetPasswordRequest;
+use App\Models\User;
 use App\Services\AuthService;
+use Illuminate\Validation\ValidationException;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
+
 class AuthController extends Controller
 {
 
-    public function __construct(private AuthService $authService){
-        $this->middleware('user_email_found')->only(['sendPasswordResetOTPMail', 'verifyUser']);
-        $this->middleware('throttle_OTP')->only(['sendPasswordResetOTPMail']);
+    public function __construct(private AuthService $authService)
+    {
+        $this->middleware('user_email_found')->only(['verifyUser']);
     }
 
     /**
@@ -36,12 +42,11 @@ class AuthController extends Controller
     public function login(AuthRequest $authRequest)
     {
         $authRequest->validated();
-
         $token = $this->authService->login($authRequest->only('email', 'password'));
-          
-        if ($token){          
+
+        if ($token) {
             return response()->json(['token' => $token]);
-        } 
+        }
         return response()->json(['message' => 'The provided credentials are incorrect.'], 401);
     }
 
@@ -57,36 +62,23 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out successfully']);
     }
 
-    /**
-     * Generates OTP and sends same to provided email
-     *
-     * @param AuthRequest $authRequest
-     * @return void
-     */
-    public function sendPasswordResetOTPMail(Request $request): JsonResponse
-    {
-        $this->authService->sendOTPMail($request);
-        return response()->json(['message' => 'OTP created successfully.'],  HttpResponse::HTTP_CREATED);
-    } 
 
     /**
-     * Verify OTP and returns response containing unique token and expiration time in seconds
+     * Change user's password from Dashboard
      *
-     * @param Request $request
+     * @param AuthRequest $authRequest
      * @return JsonResponse
      */
-    public function verifyOTP(AuthRequest $authRequest): JsonResponse 
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
-        $authRequest->validated();
+        $request->validated();
+
         try {
-            $this->authService->verifyOTP(...$authRequest->all());
-            $token = $this->authService->getResetPasswordToken($authRequest->email);
-    
+            $this->authService->changePassword(...$request->all());
             return response()->json([
-                'message' => 'OTP verification success.',
-                'resetPasswordToken' => $token,
-            ]); 
-        } catch(Exception $e){
+                'message' => 'Password changed successfully'
+            ]);
+        } catch (Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
             ], $e->getCode());
@@ -94,24 +86,52 @@ class AuthController extends Controller
     }
 
     /**
-     * Change user's password
+     * Sends reset password token to mail
      *
      * @param AuthRequest $authRequest
      * @return JsonResponse
      */
-    public function changePassword(AuthRequest $authRequest): JsonResponse
+    public function forgotPassword(AuthRequest $authRequest): JsonResponse
     {
         $authRequest->validated();
 
-        try {
-            $this->authService->changePassword(...$authRequest->all());
-            return response()->json([
-                'message' => 'Password changed successfully'
-            ]);
-        } catch(Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], $e->getCode());
+        $status = Password::sendResetLink($authRequest->only('email'));
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return response()->json(['message' => __($status)]);
         }
+
+        throw ValidationException::withMessages([
+            'email' => [__($status)]
+        ]);
+    }
+
+    /**
+     * Sends reset password token to mail
+     *
+     * @param AuthRequest $authRequest
+     * @return JsonResponse
+     */
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        $request->validated;
+
+        $status = Password::reset(
+            $request->safe()->all(),
+            function (User $user, $new_password) {
+                $user->fill(['password' => $new_password]);
+                $user->save();
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json([
+                'message' => __($status)
+            ]);
+        }
+
+        throw ValidationException::withMessages([
+            "email" => [__($status)]
+        ]);
     }
 }

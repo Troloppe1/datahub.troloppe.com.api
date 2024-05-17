@@ -3,10 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Traits\WithOtp;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,7 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, WithOtp;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -48,15 +46,25 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function otp(): HasOne{
+    public function otp(): HasOne
+    {
         return $this->hasOne(Otp::class);
     }
 
-    public function getUserData() {
+    public function getUserData()
+    {
         return [
             "id" => $this->id,
             "name" => $this->name,
             "email" => $this->email
         ];
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $clientBaseUrl = app()->environment('production') ? request()->getHost() : 'http://localhost:4200';
+        $url = $clientBaseUrl . '/reset-password?token=' . $token;
+
+        $this->notify(new ResetPasswordNotification($this->name, $url));
     }
 }
