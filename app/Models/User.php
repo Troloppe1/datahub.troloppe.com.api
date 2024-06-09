@@ -56,7 +56,8 @@ class User extends Authenticatable
         return [
             "id" => $this->id,
             "name" => $this->name,
-            "email" => $this->email
+            "email" => $this->email,
+            "roles" => $this->roles()->get(['name'])->map(fn($role) => $role->name)
         ];
     }
 

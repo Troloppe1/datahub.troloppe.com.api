@@ -6,9 +6,7 @@ use App\Http\Requests\AuthRequest;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Models\User;
-use App\Services\AuthService;
 use Illuminate\Validation\ValidationException;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 class AuthController extends Controller
 {
 
-    public function __construct(private AuthService $authService)
+    public function __construct()
     {
         $this->middleware('user_email_found')->only(['verifyUser']);
     }
@@ -33,21 +31,26 @@ class AuthController extends Controller
     {
         return response()->json(['message' => 'User exists'], HttpResponse::HTTP_OK);
     }
+
     /**
      * Login a user
      *
      * @param Request $request
-     * @return void
+     * @return array
      */
     public function login(AuthRequest $authRequest)
     {
-        $authRequest->validated();
-        $token = $this->authService->login($authRequest->only('email', 'password'));
+        $creds = $authRequest->validated();
 
-        if ($token) {
-            return response()->json(['token' => $token]);
+        if (Auth::attempt($creds)) {
+            return Auth::user()->getUserData();
         }
-        return response()->json(['message' => 'The provided credentials are incorrect.'], 401);
+
+        throw ValidationException::withMessages([
+            'email' => [
+                __('auth.failed')
+            ]
+        ]);
     }
 
     /**
@@ -58,10 +61,9 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        Auth::user()->tokens()->delete();
-        return response()->json(['message' => 'Logged out successfully']);
+        Auth::logout();
+        return response()->json(status: HttpResponse::HTTP_NO_CONTENT);
     }
-
 
     /**
      * Change user's password from Dashboard
@@ -69,21 +71,19 @@ class AuthController extends Controller
      * @param AuthRequest $authRequest
      * @return JsonResponse
      */
-    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    public function changePassword(ChangePasswordRequest $changePasswordRequest): JsonResponse
     {
-        $request->validated();
+        $creds = $changePasswordRequest->validated();
 
-        try {
-            $this->authService->changePassword(...$request->all());
-            return response()->json([
-                'message' => 'Password changed successfully'
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], $e->getCode());
-        }
+        $user = Auth::user();
+        $user->password = $creds['new_password'];
+        $user->save();
+
+        return response()->json([
+            'message' => 'Password changed successfully'
+        ]);
     }
+
 
     /**
      * Sends reset password token to mail
@@ -112,15 +112,14 @@ class AuthController extends Controller
      * @param AuthRequest $authRequest
      * @return JsonResponse
      */
-    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    public function resetPassword(ResetPasswordRequest $resetPasswordRequest): JsonResponse
     {
-        $request->validated;
+        $creds = $resetPasswordRequest->validated();
 
         $status = Password::reset(
-            $request->safe()->all(),
+            $creds,
             function (User $user, $new_password) {
-                $user->fill(['password' => $new_password]);
-                $user->save();
+                $user->create(['password' => $new_password]);
             }
         );
 
