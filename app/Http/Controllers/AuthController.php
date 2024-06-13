@@ -42,7 +42,7 @@ class AuthController extends Controller
     {
         $creds = $authRequest->validated();
 
-        if (Auth::attempt($creds)) {
+        if (Auth::guard('web')->attempt($creds)) {
             return Auth::user()->getUserData();
         }
 
@@ -61,7 +61,7 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
         return response()->json(status: HttpResponse::HTTP_NO_CONTENT);
     }
 
@@ -76,7 +76,7 @@ class AuthController extends Controller
         $creds = $changePasswordRequest->validated();
 
         $user = Auth::user();
-        $user->password = $creds['new_password'];
+        $user->password = $creds['password'];
         $user->save();
 
         return response()->json([
@@ -119,7 +119,7 @@ class AuthController extends Controller
         $status = Password::reset(
             $creds,
             function (User $user, $new_password) {
-                $user->create(['password' => $new_password]);
+                $user->update(['password' => $new_password]);
             }
         );
 
