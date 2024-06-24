@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ImageUploader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -33,3 +34,9 @@ Route::controller(AuthController::class)->prefix('auth/')->name('api-auth.')->gr
     });
 });
 
+Route::controller(ImageUploader::class)->middleware('auth:sanctum')->name('temp-image-uploader.')->group(function () {
+    Route::post('/store-temp-image', 'storeAsTmp')->name('store-as-tmp');
+    Route::post('/test', function(){
+        return response()->json(['message' => 'working']);
+    });
+});
