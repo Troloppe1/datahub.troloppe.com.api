@@ -6,6 +6,8 @@ use App\Http\Requests\AuthRequest;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Models\User;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,6 +45,7 @@ class AuthController extends Controller
         $creds = $authRequest->validated();
 
         if (Auth::guard('web')->attempt($creds)) {
+            $authRequest->session()->regenerate();
             return Auth::user()->getUserData();
         }
 
@@ -59,9 +62,11 @@ class AuthController extends Controller
      * @param Request $request
      * @return void
      */
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return response()->json(status: HttpResponse::HTTP_NO_CONTENT);
     }
 

@@ -11,18 +11,20 @@ class Location extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'is_active'];
+    protected $fillable = ['name', 'abbr', 'is_active'];
 
     protected $casts = [
         'is_active' => 'boolean'
     ];
 
-    public function sections(): HasMany{
+    public function sections(): HasMany
+    {
         return $this->hasMany(Section::class);
     }
 
-    public function name():Attribute{
-        return Attribute::make(get: function($value){
+    public function name(): Attribute
+    {
+        return Attribute::make(get: function ($value) {
             return str($value)->title()->value();
         });
     }

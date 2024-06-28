@@ -13,7 +13,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->everyTenSeconds()->appendOutputTo('storage/logs/inspirations.log');
-        $schedule->command('queue:work --max-time=300')->everyFiveMinutes();
+        // $schedule->command('queue:work --max-time=300')->everyFiveMnutes();
+        $schedule->command('queue:work --max-time=300')->everySecond();
     }
 
     /**
