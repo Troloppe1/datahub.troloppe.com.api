@@ -17,15 +17,20 @@ class Location extends Model
         'is_active' => 'boolean'
     ];
 
-    public function sections(): HasMany
-    {
-        return $this->hasMany(Section::class);
-    }
-
     public function name(): Attribute
     {
         return Attribute::make(get: function ($value) {
             return str($value)->title()->value();
         });
+    }
+
+    public function sections(): HasMany
+    {
+        return $this->hasMany(Section::class);
+    }
+
+    public function streetData(): HasMany
+    {
+        return $this->hasMany(StreetData::class);
     }
 }

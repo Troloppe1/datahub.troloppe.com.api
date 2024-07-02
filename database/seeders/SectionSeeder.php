@@ -37,7 +37,7 @@ class SectionSeeder extends Seeder
         ["location_id" => 4, "name" => "Sonibare Estate"],
         ["location_id" => 4, "name" => "Adeniyi Jones"],
 
-        // Ikeja
+        // Opebi
         ["location_id" => 5, "name" => "Awuse Estate"],
     ];
     /**

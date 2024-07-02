@@ -67,6 +67,7 @@ class Kernel extends HttpKernel
         'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
-        'user_email_found' => \App\Http\Middleware\UserIsFoundByEmail::class
+        'user_email_found' => \App\Http\Middleware\UserIsFoundByEmail::class,
+        'ensure_active_location' => \App\Http\Middleware\EnsureActiveLocation::class
     ];
 }

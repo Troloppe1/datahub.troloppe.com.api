@@ -4,14 +4,16 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\ResetPasswordNotification;
+use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
@@ -67,5 +69,20 @@ class User extends Authenticatable
         $url = $clientBaseUrl . '/reset-password?token=' . $token;
 
         $this->notify(new ResetPasswordNotification($this->name, $url));
+    }
+
+    public function canAccessPanel(\Filament\Panel $panel): bool
+    {
+        return str_ends_with($this->email, '@troloppe.com');
+    }
+    public static function booted(){
+        static::created(function(User $user){
+            $user->assignRole('Research Staff');
+        });
+    }
+
+    public function streetData(): HasMany
+    {
+        return $this->hasMany(StreetData::class);
     }
 }

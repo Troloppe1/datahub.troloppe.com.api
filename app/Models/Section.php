@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Section extends Model
 {
@@ -17,9 +18,8 @@ class Section extends Model
         return $this->belongsTo(Location::class);
     }
 
-    public function name():Attribute{
-        return Attribute::make(get: function($value){
-            return str($value)->title()->value();
-        });
+    public function streetData(): HasMany
+    {
+        return $this->hasMany(StreetData::class);
     }
 }
