@@ -2,7 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Datahub\StreetData;
+use App\Enums\UserRolesEnum;
+use App\Models\StreetData;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -13,7 +14,7 @@ class StreetDataPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return true;
     }
 
     /**
@@ -21,7 +22,7 @@ class StreetDataPolicy
      */
     public function view(User $user, StreetData $streetData): bool
     {
-        //
+        return $user->id === $streetData->creator->id || $user->hasRole([UserRolesEnum::RESEARCH_MANAGER->value, UserRolesEnum::ADMIN->value]);
     }
 
     /**

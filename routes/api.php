@@ -5,11 +5,6 @@ use App\Http\Controllers\ImageUploader;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\StreetData\FormDataController;
 use App\Http\Controllers\StreetData\StreetDataController;
-use App\Http\Resources\LocationResource;
-use App\Models\Location;
-use App\Models\Section;
-use App\Models\StreetData;
-use App\Services\ActivateLocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -56,5 +51,3 @@ Route::apiResource('street-data', StreetDataController::class)->middleware('auth
 Route::controller(LocationController::class)->name('locations.')->prefix('locations')->group(function () {
     Route::put('activate', 'activate')->name('activate')->middleware('auth:sanctum');
 });
-
-

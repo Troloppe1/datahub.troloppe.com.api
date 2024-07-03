@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRolesEnum;
 use App\Notifications\ResetPasswordNotification;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,11 +49,6 @@ class User extends Authenticatable implements FilamentUser
         'password' => 'hashed',
     ];
 
-    public function otp(): HasOne
-    {
-        return $this->hasOne(Otp::class);
-    }
-
     public function getUserData()
     {
         return [
@@ -75,14 +71,20 @@ class User extends Authenticatable implements FilamentUser
     {
         return str_ends_with($this->email, '@troloppe.com');
     }
-    public static function booted(){
-        static::created(function(User $user){
-            $user->assignRole('Research Staff');
+    public static function booted()
+    {
+        static::created(function (User $user) {
+            $user->assignRole(UserRolesEnum::RESEARCH_STAFF->value);
         });
     }
 
     public function streetData(): HasMany
     {
         return $this->hasMany(StreetData::class);
+    }
+
+    public function isUpline(): bool
+    {
+        return $this->hasAnyRole([UserRolesEnum::RESEARCH_MANAGER->value, UserRolesEnum::ADMIN->value]);
     }
 }

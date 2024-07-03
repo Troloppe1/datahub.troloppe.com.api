@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\StreetData;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\StreetDataResource;
+use App\Models\StreetData;
 use App\Services\ImageUploaderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class StreetDataController extends Controller
 {
@@ -18,7 +21,9 @@ class StreetDataController extends Controller
      */
     public function index()
     {
-        //
+        Gate::authorize('view-any', StreetData::class);
+        $streetData =  StreetData::with(['creator','section', 'location'])->get();
+        return StreetDataResource::collection($streetData);
     }
 
     /**
