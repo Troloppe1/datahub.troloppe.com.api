@@ -42,7 +42,7 @@ Route::controller(ImageUploader::class)->middleware('auth:sanctum')->name('temp-
     Route::delete('/delete-image', 'deleteImage')->name('delete-image');
 });
 
-Route::controller(FormDataController::class)->prefix('street-data')->name('street-data.')->middleware(['ensure_active_location'])->group(function () {
+Route::controller(FormDataController::class)->prefix('street-data')->name('street-data.')->middleware(['auth:sanctum'])->group(function () {
     Route::get('form-data', 'formData')->name('form-data');
 });
 
@@ -50,4 +50,12 @@ Route::apiResource('street-data', StreetDataController::class)->middleware('auth
 
 Route::controller(LocationController::class)->name('locations.')->prefix('locations')->group(function () {
     Route::put('activate', 'activate')->name('activate')->middleware('auth:sanctum');
+});
+
+
+
+//TEST
+
+Route::controller(FormDataController::class)->prefix('street-data')->name('street-data.')->group(function () {
+    Route::get('form-data', 'formData')->name('form-data');
 });

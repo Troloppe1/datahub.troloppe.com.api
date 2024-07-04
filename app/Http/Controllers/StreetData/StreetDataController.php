@@ -22,7 +22,8 @@ class StreetDataController extends Controller
     public function index()
     {
         Gate::authorize('view-any', StreetData::class);
-        $streetData =  StreetData::with(['creator','section', 'location'])->get();
+        \Log::debug(request()->route()->getName());
+        $streetData = StreetData::with(['creator', 'section', 'location'])->get();
         return StreetDataResource::collection($streetData);
     }
 
@@ -42,7 +43,8 @@ class StreetDataController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $streetDatum = StreetData::find($id);
+        return new StreetDataResource($streetDatum);
     }
 
     /**
