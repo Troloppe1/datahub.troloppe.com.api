@@ -34,7 +34,6 @@ class ImageUploader extends Controller
         ]);
 
         $deleted = $this->imageService->deleteImage($request->image_url);
-
         if ($deleted)
             return response()->json(status: 204);
 

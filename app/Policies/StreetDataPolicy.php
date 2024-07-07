@@ -5,10 +5,13 @@ namespace App\Policies;
 use App\Enums\UserRolesEnum;
 use App\Models\StreetData;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class StreetDataPolicy
 {
+    public function before(User $user, string $ability){
+        return $user->isUpline();
+    }
+
     /**
      * Determine whether the user can view any models.
      */
@@ -22,7 +25,7 @@ class StreetDataPolicy
      */
     public function view(User $user, StreetData $streetData): bool
     {
-        return $user->id === $streetData->creator->id || $user->hasRole([UserRolesEnum::RESEARCH_MANAGER->value, UserRolesEnum::ADMIN->value]);
+        return $user->id === $streetData->creator->id;
     }
 
     /**
@@ -30,7 +33,7 @@ class StreetDataPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return true;
     }
 
     /**
@@ -38,7 +41,7 @@ class StreetDataPolicy
      */
     public function update(User $user, StreetData $streetData): bool
     {
-        //
+        return $user->id === $streetData->creator_id;
     }
 
     /**
@@ -46,7 +49,7 @@ class StreetDataPolicy
      */
     public function delete(User $user, StreetData $streetData): bool
     {
-        //
+        return $user->id === $streetData->creator_id;
     }
 
     /**
@@ -54,7 +57,7 @@ class StreetDataPolicy
      */
     public function restore(User $user, StreetData $streetData): bool
     {
-        //
+        return $user->id === $streetData->creator_id;
     }
 
     /**
@@ -62,6 +65,6 @@ class StreetDataPolicy
      */
     public function forceDelete(User $user, StreetData $streetData): bool
     {
-        //
+        return $user->id === $streetData->creator_id;
     }
 }

@@ -66,7 +66,6 @@ class ImageUploaderService
      */
     public function moveImage(string $imageUrl, string $destinationDir): bool|string
     {
-        // http://localhost:8000/storage/tmp/1719217991-activitylog.jpg
         $tempStoragePath = $this->getStoragePath($imageUrl);
         if (Storage::exists($tempStoragePath)) {
             $basename = basename($tempStoragePath);
