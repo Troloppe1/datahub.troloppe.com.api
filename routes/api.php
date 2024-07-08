@@ -3,9 +3,9 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ImageUploader;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\StreetData\FormDataController;
 use App\Http\Controllers\StreetData\StreetDataController;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -52,3 +52,13 @@ Route::apiResource('street-data', StreetDataController::class)->middleware('auth
 Route::controller(LocationController::class)->name('locations.')->prefix('locations')->group(function () {
     Route::put('activate', 'activate')->name('activate')->middleware('auth:sanctum');
 });
+
+Route::controller(NotificationsController::class)
+    ->name('notifications.')
+    ->prefix('notifications')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('all', 'allNotifications')->name('name');
+        Route::put('mark-as-read', 'markAsRead')->name('mark-as-read');
+        Route::delete('delete-all', 'deleteAll')->name('delete-all');
+    });

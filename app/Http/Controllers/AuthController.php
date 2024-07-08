@@ -7,13 +7,12 @@ use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
@@ -31,7 +30,7 @@ class AuthController extends Controller
      */
     public function verifyUser(): JsonResponse
     {
-        return response()->json(['message' => 'User exists'], HttpResponse::HTTP_OK);
+        return response()->json(['message' => 'User exists'], Response::HTTP_OK);
     }
 
     /**
@@ -60,14 +59,16 @@ class AuthController extends Controller
      * Logout authenticated user
      *
      * @param Request $request
-     * @return void
+     * @return Response
      */
-    public function logout(Request $request)
+    public function logout(Request $request): Response
     {
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return response()->json(status: HttpResponse::HTTP_NO_CONTENT);
+        Cookie::queue(Cookie::forget('datahub_session'));
+        Cookie::queue(Cookie::forget('XSRF-TOKEN'));
+        return response(status: Response::HTTP_NO_CONTENT);
     }
 
     /**

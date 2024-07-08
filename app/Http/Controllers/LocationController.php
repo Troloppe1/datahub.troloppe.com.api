@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\LocationResource;
+use App\Models\User;
+use App\Notifications\LocationActivated;
 use App\Services\ActivateLocationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class LocationController extends Controller
 {
@@ -21,9 +24,13 @@ class LocationController extends Controller
         $locationIdToActivate = $request->input('location_id');
         $activeLocation = $this->activateLocationService->activate($locationIdToActivate);
 
-        if ($activeLocation)
+        if ($activeLocation) {
+            $researchStaff = User::role('Research Staff')->get();
+            Notification::send($researchStaff, new LocationActivated($activeLocation));
             return response()->json(['active_location' => new LocationResource($activeLocation)]);
+        }
 
-        return response()->json([], status: 204);
+
+        return response(status: 204);
     }
 }

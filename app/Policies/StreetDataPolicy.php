@@ -8,8 +8,8 @@ use App\Models\User;
 
 class StreetDataPolicy
 {
-    public function before(User $user, string $ability){
-        return $user->isUpline();
+    public function isPermitted(User $user, StreetData $streetData){
+        return $user->isUpline() || $user->id === $streetData->creator->id;
     }
 
     /**
@@ -25,7 +25,7 @@ class StreetDataPolicy
      */
     public function view(User $user, StreetData $streetData): bool
     {
-        return $user->id === $streetData->creator->id;
+        return $this->isPermitted($user, $streetData);
     }
 
     /**
@@ -41,7 +41,7 @@ class StreetDataPolicy
      */
     public function update(User $user, StreetData $streetData): bool
     {
-        return $user->id === $streetData->creator_id;
+        return $this->isPermitted($user, $streetData);
     }
 
     /**
@@ -49,7 +49,7 @@ class StreetDataPolicy
      */
     public function delete(User $user, StreetData $streetData): bool
     {
-        return $user->id === $streetData->creator_id;
+        return $this->isPermitted($user, $streetData);
     }
 
     /**
@@ -57,7 +57,7 @@ class StreetDataPolicy
      */
     public function restore(User $user, StreetData $streetData): bool
     {
-        return $user->id === $streetData->creator_id;
+        return $this->isPermitted($user, $streetData);
     }
 
     /**
@@ -65,6 +65,6 @@ class StreetDataPolicy
      */
     public function forceDelete(User $user, StreetData $streetData): bool
     {
-        return $user->id === $streetData->creator_id;
+        return $this->isPermitted($user, $streetData);
     }
 }

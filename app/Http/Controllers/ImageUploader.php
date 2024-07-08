@@ -35,7 +35,7 @@ class ImageUploader extends Controller
 
         $deleted = $this->imageService->deleteImage($request->image_url);
         if ($deleted)
-            return response()->json(status: 204);
+            return response(status: 204);
 
         throw ValidationException::withMessages([
             'image_url' => 'Image does not exist.'
