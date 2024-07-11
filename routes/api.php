@@ -1,13 +1,17 @@
 <?php
 
+use App\Facades\PruneExpiredTmpImagesFacade;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ImageUploader;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\StreetData\FormDataController;
+use App\Http\Controllers\StreetData\OverviewController;
 use App\Http\Controllers\StreetData\StreetDataController;
+use App\Notifications\UserCredentialsNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -24,9 +28,8 @@ Route::middleware('auth:sanctum')->get('/auth/user', function (Request $request)
     return $request->user()->getUserData();
 });
 
-
 Route::controller(AuthController::class)->prefix('auth/')->name('api-auth.')->group(function () {
-    Route::post('/verify-user', "verifyUser")->name('verify-user');
+    Route::post('/verify-user-by-email', "verifyUserByEmail")->name('verify-user-by-email');
     Route::post('/login', 'login')->name('login');
 
     Route::post('/forgot-password', 'forgotPassword')->name('forgot-password');
@@ -47,11 +50,26 @@ Route::controller(FormDataController::class)->prefix('street-data')->name('stree
     Route::get('form-data', 'formData')->name('form-data');
 });
 
+Route::controller(OverviewController::class)
+    ->name('street-data.overview.')
+    ->prefix('street-data/overview')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('widget-set', 'widgetSet')->name('widget-set');
+        Route::get('visual-set', 'visualSet')->name('visual-set');
+        Route::get('user-performance', 'userPerformance')->name('user-performance');
+    });
+
 Route::apiResource('street-data', StreetDataController::class)->middleware('auth:sanctum');
 
-Route::controller(LocationController::class)->name('locations.')->prefix('locations')->group(function () {
-    Route::put('activate', 'activate')->name('activate')->middleware('auth:sanctum');
-});
+Route::controller(LocationController::class)
+    ->name('locations.')
+    ->prefix('locations')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::put('activate', 'activate')->name('activate');
+        Route::get('check-activate-location', 'checkActivateLocation')->name('check-activate-location');
+    });
 
 Route::controller(NotificationsController::class)
     ->name('notifications.')

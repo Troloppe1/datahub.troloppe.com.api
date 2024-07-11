@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\Debugger;
+use App\Services\PruneExpiredTmpImageService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\ServiceProvider;
@@ -14,9 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton('debugger', function(){
-            return new Debugger();
-        });
+        $this->app->singleton(PruneExpiredTmpImageService::class, fn() => new PruneExpiredTmpImageService());
     }
 
     /**

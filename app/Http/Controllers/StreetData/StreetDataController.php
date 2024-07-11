@@ -23,7 +23,6 @@ class StreetDataController extends Controller
     public function index()
     {
         Gate::authorize('view-any', StreetData::class);
-        \Log::debug(request()->route()->getName());
         $streetData = StreetData::with(['creator', 'section', 'location'])->latest()->get();
         return StreetDataResource::collection($streetData);
     }
@@ -47,7 +46,7 @@ class StreetDataController extends Controller
             $streetData->image_path = url($image_path);
         }
         $streetData->save();
-        return response()->json($request->safe()->all(), 201);
+        return response()->json($streetData, 201);
     }
 
     /**

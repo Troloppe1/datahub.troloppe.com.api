@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\LocationResource;
+use App\Models\Location;
 use App\Models\User;
 use App\Notifications\LocationActivated;
 use App\Services\ActivateLocationService;
@@ -26,11 +27,16 @@ class LocationController extends Controller
 
         if ($activeLocation) {
             $researchStaff = User::role('Research Staff')->get();
-            Notification::send($researchStaff, new LocationActivated($activeLocation));
+            Notification::sendNow($researchStaff, new LocationActivated($activeLocation));
             return response()->json(['active_location' => new LocationResource($activeLocation)]);
         }
 
 
         return response(status: 204);
+    }
+
+    public function checkActivateLocation(Request $request)
+    {
+        return ['name' => Location::where(['is_active' => true])->firstOrFail()->name];
     }
 }

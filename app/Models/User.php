@@ -4,6 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRolesEnum;
+use App\Events\CreatingUser;
+use App\Events\UserCreated;
+use App\Notifications\PasswordChangeRequiredNotification;
 use App\Notifications\ResetPasswordNotification;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -29,6 +33,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
     ];
 
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -46,7 +51,7 @@ class User extends Authenticatable implements FilamentUser
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        // 'password' => 'hashed',
     ];
 
     public function getUserData()
@@ -61,26 +66,29 @@ class User extends Authenticatable implements FilamentUser
 
     public function sendPasswordResetNotification($token)
     {
-        $clientBaseUrl = app()->environment('production') ? request()->getHost() : 'http://localhost:4200';
-        $url = $clientBaseUrl . '/reset-password?token=' . $token;
-
+        $clientBaseUrl = config('frontend_urls.reset_password');
+        $url = "{$clientBaseUrl}?token={$token}";
         $this->notify(new ResetPasswordNotification($this->name, $url));
     }
 
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
-        return str_ends_with($this->email, '@troloppe.com');
+        return str_ends_with($this->email, '@troloppe.com') && $this->hasRole('Admin');
     }
     public static function booted()
     {
+        static::creating(function (User $user) {
+            event(new CreatingUser($user));
+            $user->password = Hash::make($user->password);
+        });
         static::created(function (User $user) {
-            $user->assignRole(UserRolesEnum::RESEARCH_STAFF->value);
+            event(new UserCreated($user));
         });
     }
 
     public function streetData(): HasMany
     {
-        return $this->hasMany(StreetData::class);
+        return $this->hasMany(StreetData::class, 'creator_id');
     }
 
     public function isUpline(): bool

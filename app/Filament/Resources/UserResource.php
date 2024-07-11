@@ -5,13 +5,17 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
+use Filament\Actions\CreateAction;
 use Filament\Forms;
+use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Component;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Rawilk\FilamentPasswordInput\Password;
 
 class UserResource extends Resource
 {
@@ -30,16 +34,21 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('password')
-                    ->password()
+
+                Password::make('password')
+                    ->label('Password')
+                    ->regeneratePassword(using: fn() => \Str::random())
                     ->required()
-                    ->maxLength(255),
+                    ->minLength('16')
+                    ->visibleOn('create'),
+
                 Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->preload()
                     ->searchable()
+                    ->required(),
+                
             ]);
     }
 

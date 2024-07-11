@@ -7,7 +7,6 @@ use App\Http\Resources\LocationResource;
 use App\Http\Resources\SectionResource;
 use App\Models\Location;
 use App\Models\Section;
-use App\Services\ActivateLocationService;
 use App\Services\StreetDataService;
 use Illuminate\Http\Request;
 

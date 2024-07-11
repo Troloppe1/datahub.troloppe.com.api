@@ -22,7 +22,7 @@ class NotificationsController extends Controller
      * Marks a notification as read and returns all the notifications
      *
      * @param Request $request
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * @return NotificationResource
      */
     public function markAsRead(Request $request)
     {
@@ -31,7 +31,7 @@ class NotificationsController extends Controller
         $notification = auth()->user()->notifications()->find($request->id);
         if ($notification) {
             $notification->markAsRead();
-            return NotificationResource::collection(auth()->user()->notifications);
+            return new NotificationResource($notification);
         }
         abort(404);
     }

@@ -27,6 +27,12 @@ class ImageUploader extends Controller
         return response()->json(['image_tmp_url' => url($publicUrl)]);
     }
 
+    /**
+     * Deletes Image
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function deleteImage(Request $request)
     {
         $request->validate([

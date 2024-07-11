@@ -7,6 +7,7 @@ use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,7 +29,7 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function verifyUser(): JsonResponse
+    public function verifyUserByEmail(): JsonResponse
     {
         return response()->json(['message' => 'User exists'], Response::HTTP_OK);
     }
@@ -82,7 +83,7 @@ class AuthController extends Controller
         $creds = $changePasswordRequest->validated();
 
         $user = Auth::user();
-        $user->password = $creds['password'];
+        $user->password = Hash::make($creds['password']);
         $user->save();
 
         return response()->json([
@@ -125,7 +126,7 @@ class AuthController extends Controller
         $status = Password::reset(
             $creds,
             function (User $user, $new_password) {
-                $user->update(['password' => $new_password]);
+                $user->update(['password' => Hash::make($new_password)]);
             }
         );
 

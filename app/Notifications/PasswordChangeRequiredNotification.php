@@ -2,21 +2,21 @@
 
 namespace App\Notifications;
 
-use App\Models\Location;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class LocationActivated extends Notification
+class PasswordChangeRequiredNotification extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(private Location $activeLocation)
+    public function __construct()
     {
+
     }
 
     /**
@@ -48,9 +48,9 @@ class LocationActivated extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'label' => 'New Street Location Activated - ' . $this->activeLocation->name,
-            'message' => 'Your upline has set a new street location. Prepare to head out.',
-            'severity' => 'info'
+            'label' => 'Password Change Required', // Set label to Password Change Required
+            'message' => 'For security reasons, please change your password.',
+            'severity' => 'warning'
         ];
     }
 }
