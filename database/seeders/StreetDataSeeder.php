@@ -16,7 +16,6 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST001",
             "street_address" => "123 Main St",
             "description" => "Residential street with single-family homes",
-            "sector" => "residential",
             "location_id" => 4,
             "section_id" => 17,
             "sector_id" => 1,
@@ -37,7 +36,6 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST002",
             "street_address" => "456 Elm St",
             "description" => "Mixed-use street with shops and apartments",
-            "sector" => "commercial",
             "location_id" => 2,
             "section_id" => 11,
             "sector_id" => 1,
@@ -58,7 +56,6 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST003",
             "street_address" => "789 Oak St",
             "description" => "Suburban street with townhouses",
-            "sector" => "residential",
             "location_id" => 2,
             "section_id" => 10,
             "sector_id" => 1,
@@ -79,7 +76,6 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST004",
             "street_address" => "101 Pine St",
             "description" => "Industrial street with warehouses",
-            "sector" => "industrial",
             "location_id" => 3,
             "section_id" => 14,
             "sector_id" => 1,
@@ -100,12 +96,12 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST005",
             "street_address" => "202 Maple St",
             "description" => "Commercial street with office buildings",
-            "sector" => "commercial",
             "location_id" => 1,
             "section_id" => 3,
 
-"sector_id" => 1,
-"sub_sector_id" => 2,            "number_of_units" => 20,
+            "sector_id" => 1,
+            "sub_sector_id" => 2,
+            "number_of_units" => 20,
             "contact_name" => "Michael Johnson",
             "contact_numbers" => "555-6543",
             "contact_email" => "michael.johnson@example.com",
@@ -121,7 +117,6 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST001",
             "street_address" => "123 Main St",
             "description" => "(Latest) Residential street with single-family homes",
-            "sector" => "residential",
             "location_id" => 4,
             "section_id" => 17,
             "sector_id" => 1,
@@ -142,7 +137,6 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST002",
             "street_address" => "456 Elm St",
             "description" => "(Latest) Mixed-use street with shops and apartments",
-            "sector" => "commercial",
             "location_id" => 2,
             "section_id" => 11,
             "sector_id" => 1,
@@ -163,7 +157,6 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST003",
             "street_address" => "789 Oak St",
             "description" => "(Latest) Suburban street with townhouses",
-            "sector" => "residential",
             "location_id" => 2,
             "section_id" => 10,
             "sector_id" => 1,
@@ -184,7 +177,6 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST004",
             "street_address" => "101 Pine St",
             "description" => "(Latest) Industrial street with warehouses",
-            "sector" => "industrial",
             "location_id" => 3,
             "section_id" => 14,
             "sector_id" => 1,
@@ -205,12 +197,11 @@ class StreetDataSeeder extends Seeder
             "unique_code" => "ST005",
             "street_address" => "202 Maple St",
             "description" => "(Latest) Commercial street with office buildings",
-            "sector" => "commercial",
             "location_id" => 1,
             "section_id" => 3,
-
-"sector_id" => 1,
-"sub_sector_id" => 2,            "number_of_units" => 20,
+            "sector_id" => 1,
+            "sub_sector_id" => 2,
+            "number_of_units" => 20,
             "contact_name" => "Michael Johnson",
             "contact_numbers" => "555-6543",
             "contact_email" => "michael.johnson@example.com",
@@ -225,7 +216,7 @@ class StreetDataSeeder extends Seeder
      */
     public function run(): void
     {
-        foreach($this->streetData as $streetData){
+        foreach ($this->streetData as $streetData) {
             StreetData::create($streetData);
         }
     }

@@ -16,7 +16,6 @@ return new class extends Migration {
             $table->string('unique_code', 50);
             $table->string('street_address', 250);
             $table->mediumText('description');
-            $table->string('sector', 50);
             $table->foreignId('location_id')->constrained('locations')->cascadeOnDelete();
             $table->foreignId('section_id')->constrained('sections')->cascadeOnDelete();
             $table->smallInteger('number_of_units');

@@ -46,7 +46,6 @@ Route::controller(ImageUploader::class)->middleware('auth:sanctum')->name('temp-
 
 Route::controller(FormDataController::class)->prefix('street-data')->name('street-data.')->middleware('auth:sanctum')->group(function () {
     Route::get('form-data', 'formData')->name('form-data');
-    Route::get('sub-sector-form-data-by-sector/{sector}', 'subSectorFormDataBySector')->name('sub-sector-form-data-by-sector');
 });
 
 Route::controller(OverviewController::class)

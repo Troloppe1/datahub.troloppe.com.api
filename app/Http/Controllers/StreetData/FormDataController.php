@@ -10,6 +10,7 @@ use App\Http\Resources\SubSectorResource;
 use App\Models\Location;
 use App\Models\Section;
 use App\Models\Sector;
+use App\Models\SubSector;
 use App\Services\StreetDataService;
 use Illuminate\Http\Request;
 
@@ -33,16 +34,15 @@ class FormDataController extends Controller
             ->getAllUniqueStreetDataCodes();
         $unique_codes = [...[["id" => 0, "value" => "New Entry"]], ...$unique_codes];
 
+        SubSector::with('sector'); // Eagerly load sectors with sub sectors
+
         $formDataValues = [
             'unique_codes' => $unique_codes,
             'locations' => LocationResource::collection(Location::all()),
             'sections' => SectionResource::collection(Section::all()),
             'sectors' => SectorResource::collection(Sector::all()),
+            'sub_sectors' => SubSectorResource::collection(SubSector::all())
         ];
         return response()->json($formDataValues);
-    }
-
-    public function subSectorFormDataBySector(Sector $sector){
-        return SubSectorResource::collection($sector->subSectors);
     }
 }

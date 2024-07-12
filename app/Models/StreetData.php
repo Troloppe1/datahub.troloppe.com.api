@@ -29,4 +29,12 @@ class StreetData extends Model
     {
         return $this->belongsTo(Section::class);
     }
+    public function sector(): BelongsTo
+    {
+        return $this->belongsTo(Sector::class);
+    }
+    public function subSector(): BelongsTo
+    {
+        return $this->belongsTo(SubSector::class);
+    }
 }

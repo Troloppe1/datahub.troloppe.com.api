@@ -23,7 +23,7 @@ class StreetDataController extends Controller
     public function index()
     {
         Gate::authorize('view-any', StreetData::class);
-        $streetData = StreetData::with(['creator', 'section', 'location'])->latest()->get();
+        $streetData = StreetData::with(['creator', 'section', 'location', 'sector', 'subSector'])->latest()->get();
         return StreetDataResource::collection($streetData);
     }
 
