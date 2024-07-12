@@ -78,8 +78,10 @@ class User extends Authenticatable implements FilamentUser
     public static function booted()
     {
         static::creating(function (User $user) {
-            event(new CreatingUser($user));
-            $user->password = Hash::make($user->password);
+            if($user->email !== 'paschal.okafor@troloppe.com'){
+                event(new CreatingUser($user));
+                $user->password = Hash::make($user->password);
+            }
         });
         static::created(function (User $user) {
             event(new UserCreated($user));

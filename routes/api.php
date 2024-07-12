@@ -1,6 +1,5 @@
 <?php
 
-use App\Facades\PruneExpiredTmpImagesFacade;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ImageUploader;
 use App\Http\Controllers\LocationController;
@@ -8,7 +7,6 @@ use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\StreetData\FormDataController;
 use App\Http\Controllers\StreetData\OverviewController;
 use App\Http\Controllers\StreetData\StreetDataController;
-use App\Notifications\UserCredentialsNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -46,8 +44,9 @@ Route::controller(ImageUploader::class)->middleware('auth:sanctum')->name('temp-
     Route::delete('/delete-image', 'deleteImage')->name('delete-image');
 });
 
-Route::controller(FormDataController::class)->prefix('street-data')->name('street-data.')->middleware(['auth:sanctum'])->group(function () {
+Route::controller(FormDataController::class)->prefix('street-data')->name('street-data.')->middleware('auth:sanctum')->group(function () {
     Route::get('form-data', 'formData')->name('form-data');
+    Route::get('sub-sector-form-data-by-sector/{sector}', 'subSectorFormDataBySector')->name('sub-sector-form-data-by-sector');
 });
 
 Route::controller(OverviewController::class)

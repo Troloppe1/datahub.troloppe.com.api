@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -18,8 +17,8 @@ return new class extends Migration
             $table->string('street_address', 250);
             $table->mediumText('description');
             $table->string('sector', 50);
-            $table->foreignId('location_id')->constrained('locations');
-            $table->foreignId('section_id')->constrained('sections');
+            $table->foreignId('location_id')->constrained('locations')->cascadeOnDelete();
+            $table->foreignId('section_id')->constrained('sections')->cascadeOnDelete();
             $table->smallInteger('number_of_units');
             $table->string('contact_name', 250);
             $table->string('contact_numbers', 250);

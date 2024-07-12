@@ -19,6 +19,9 @@ yarn-error.log
 /.vscode
 
 /app/Console/Commands/DeployProdEnv.php
+/app/Console/Commands/CreateFilamentUser.php;
+/app/Console/Commands/PreCpanelDeploy.php;
+
 /docker-compose.yml
 /*.rest
 ~docker-compose.yml
