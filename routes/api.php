@@ -4,7 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ImageUploader;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationsController;
-use App\Http\Controllers\StreetData\FormDataController;
+use App\Http\Controllers\StreetData\FormFieldDataController;
 use App\Http\Controllers\StreetData\OverviewController;
 use App\Http\Controllers\StreetData\StreetDataController;
 use Illuminate\Http\Request;
@@ -44,8 +44,8 @@ Route::controller(ImageUploader::class)->middleware('auth:sanctum')->name('temp-
     Route::delete('/delete-image', 'deleteImage')->name('delete-image');
 });
 
-Route::controller(FormDataController::class)->prefix('street-data')->name('street-data.')->middleware('auth:sanctum')->group(function () {
-    Route::get('form-data', 'formData')->name('form-data');
+Route::controller(FormFieldDataController::class)->prefix('street-data')->name('street-data.')->middleware('auth:sanctum')->group(function () {
+    Route::get('form-field-data', 'index')->name('form-field-data.index');
 });
 
 Route::controller(OverviewController::class)
@@ -66,7 +66,7 @@ Route::controller(LocationController::class)
     ->middleware('auth:sanctum')
     ->group(function () {
         Route::put('activate', 'activate')->name('activate');
-        Route::get('check-activate-location', 'checkActivateLocation')->name('check-activate-location');
+        Route::get('get-active-location', 'getActiveLocation')->name('get-active-location');
     });
 
 Route::controller(NotificationsController::class)

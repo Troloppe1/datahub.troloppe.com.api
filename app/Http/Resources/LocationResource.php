@@ -15,10 +15,17 @@ class LocationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $resource = [
             "id" => $this->id,
             "name" => $this->name,
             "is_active" => $this->is_active
         ];
+        $isFormFieldRequest = request()->routeIs('street-data.form-field-data.index');
+
+        if (!$isFormFieldRequest) {
+            return $resource;
+        }
+        $resource['sections'] = SectionResource::collection($this->sections);
+        return $resource;
     }
 }

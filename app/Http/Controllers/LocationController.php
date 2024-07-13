@@ -9,6 +9,7 @@ use App\Notifications\LocationActivated;
 use App\Services\ActivateLocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
+use Symfony\Component\Translation\Exception\NotFoundResourceException;
 
 class LocationController extends Controller
 {
@@ -35,8 +36,9 @@ class LocationController extends Controller
         return response(status: 204);
     }
 
-    public function checkActivateLocation(Request $request)
+    public function getActiveLocation(Request $request)
     {
-        return ['name' => Location::where(['is_active' => true])->firstOrFail()->name];
+        $activeLocation = Location::where(['is_active' => true])->firstOrFail();
+        return new LocationResource($activeLocation);
     }
 }

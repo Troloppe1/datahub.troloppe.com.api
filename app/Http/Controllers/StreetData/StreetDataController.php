@@ -32,18 +32,15 @@ class StreetDataController extends Controller
      */
     public function store(StreetDataRequest $request)
     {
+        $request->validated();
         $streetData = new StreetData();
-        $streetData->fill($request->input());
+        $streetData->fill($request->safe()->all());
         $streetData->creator_id = Auth::user()->id;
-        $streetData->location_id = $request->location;
-        $streetData->section_id = $request->section;
-        $image = $request->image;
-        $streetData->image_path = $image;
+        
+        $image_perm_path = $this->imageUploaderService->moveImage($streetData->image_path, '/public/images/street-data');
 
-        $image_path = $this->imageUploaderService->moveImage($image, '/public/images/street-data');
-
-        if ($image_path) {
-            $streetData->image_path = url($image_path);
+        if ($image_perm_path) {
+            $streetData->image_path = url($image_perm_path);
         }
         $streetData->save();
         return response()->json($streetData, 201);
