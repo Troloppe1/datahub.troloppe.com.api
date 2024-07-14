@@ -36,7 +36,7 @@ deployment:
 
     # Set Permissions
     - /bin/find ${DEPLOYPATH} -type f -exec chmod 644 {}\;
-    - /bin/find ${DEPLOYPATH} -type f -exec chmod 755 {}\;
+    - /bin/find ${DEPLOYPATH} -type d -exec chmod 755 {}\;
     - /bin/chown -R ${USER}:${USER} ${DEPLOYPATH};
     - /bin/chmod -R 775 ${DEPLOYPATH}/storage; 
     - /bin/chmod -R 775 ${DEPLOYPATH}/bootstrap/cache; 
