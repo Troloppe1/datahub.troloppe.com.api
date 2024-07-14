@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('queue:work --max-time=270')->withoutOverlapping()->runInBackground();
-        $schedule->command('prune-expired-tmp-image')->runInBackground();
+        $schedule->command('app:prune-expired-tmp-image')->runInBackground();
     }
 
     /**
