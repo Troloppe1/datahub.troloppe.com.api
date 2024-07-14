@@ -31,8 +31,11 @@ deployment:
     - /usr/local/bin/php artisan optimize;
     - /usr/local/bin/php artisan filament:clear-cached-components;
     - /usr/local/bin/php artisan filament:cache-components;
-    - /usr/local/bin/php artisan icons:clear ;
+    - /usr/local/bin/php artisan icons:clear;
     - /usr/local/bin/php artisan icons:cache;
+
+    # Link Storage
+    - /usr/local/bin/php artisan storage:link;
 
     # Set Permissions
     - /bin/find ${DEPLOYPATH} -type f -exec chmod 644 {}\;
