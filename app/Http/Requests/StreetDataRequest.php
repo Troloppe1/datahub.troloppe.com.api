@@ -31,12 +31,12 @@ class StreetDataRequest extends FormRequest
             'location_id' => 'required|numeric',
             'section_id' => 'required|numeric',
             'number_of_units' => 'required|numeric',
-            'contact_name' => 'required|string',
-            'contact_numbers' => 'required|string',
-            'contact_email' => 'required|email',
+            'contact_name' => 'nullable|string|max:250',
+            'contact_numbers' => 'nullable|string|max:250',
+            'contact_email' => 'nullable|string|max:250',
             'construction_status' => 'required|string',
             'image_path' => 'required|string',
-            'geolocation' => 'required|string',
+            'geolocation' => 'nullable|string|max:250',
         ];
     }
 }
