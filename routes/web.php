@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\RouteController;
+use App\Http\Controllers\StreetData\StreetDataController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,3 +16,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [RouteController::class, 'index']);
+
+Route::get('/street-data/export', [StreetDataController::class, 'export'])->name('street-data.export')->middleware('auth:web');

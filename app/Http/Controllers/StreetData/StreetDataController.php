@@ -82,7 +82,6 @@ class StreetDataController extends Controller
 
     public function export(Request $request)
     {
-        Gate::authorize('export', StreetData::class);
         $request->validate(['format' => 'string']);
         $format = $request->format;
 
