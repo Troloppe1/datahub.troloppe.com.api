@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\StreetData;
 
+use App\Exports\StreetDataExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StreetDataRequest;
 use App\Http\Resources\StreetDataResource;
@@ -10,11 +11,14 @@ use App\Services\ImageUploaderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Maatwebsite\Excel\Excel;
 
 class StreetDataController extends Controller
 {
-    public function __construct(private readonly ImageUploaderService $imageUploaderService)
-    {
+    public function __construct(
+        private readonly ImageUploaderService $imageUploaderService,
+        private readonly Excel $excel
+    ) {
         //
     }
     /**
@@ -36,7 +40,7 @@ class StreetDataController extends Controller
         $streetData = new StreetData();
         $streetData->fill($request->safe()->all());
         $streetData->creator_id = Auth::user()->id;
-        
+
         $image_perm_path = $this->imageUploaderService->moveImage($streetData->image_path, '/public/images/street-data');
 
         if ($image_perm_path) {
@@ -75,4 +79,22 @@ class StreetDataController extends Controller
         $streetDatum->delete();
         return response()->json([], 204);
     }
+
+    public function export(Request $request)
+    {
+        Gate::authorize('export', StreetData::class);
+        $request->validate(['format' => 'string']);
+        $format = $request->format;
+
+        if ($format) {
+            return $this->excel->download(new StreetDataExport, "street-data.{$this->exportFormatType[$format]}");
+        }
+
+        return $this->excel->download(new StreetDataExport, "street-data.xlsx");
+    }
+
+    private $exportFormatType = [
+        'excel' => 'xlsx',
+        'csv' => 'csv',
+    ];
 }

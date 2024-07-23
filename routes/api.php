@@ -58,6 +58,7 @@ Route::controller(OverviewController::class)
         Route::get('user-performance', 'userPerformance')->name('user-performance');
     });
 
+Route::get('/street-data/export', [StreetDataController::class, 'export'])->name('street-data.export')->middleware('auth:sanctum');
 Route::apiResource('street-data', StreetDataController::class)->middleware('auth:sanctum');
 
 Route::controller(LocationController::class)

@@ -8,7 +8,8 @@ use App\Models\User;
 
 class StreetDataPolicy
 {
-    public function isPermitted(User $user, StreetData $streetData){
+    public function isPermitted(User $user, StreetData $streetData)
+    {
         return $user->isUpline() || $user->id === $streetData->creator->id;
     }
 
@@ -66,5 +67,13 @@ class StreetDataPolicy
     public function forceDelete(User $user, StreetData $streetData): bool
     {
         return $this->isPermitted($user, $streetData);
+    }
+
+    /**
+     * Determine whether the user can export Street Data.
+     */
+    public function export(User $user): bool
+    {
+        return $user->isUpline();
     }
 }
