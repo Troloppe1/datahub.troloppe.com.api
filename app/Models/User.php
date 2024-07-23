@@ -10,6 +10,7 @@ use App\Notifications\PasswordChangeRequiredNotification;
 use App\Notifications\ResetPasswordNotification;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -98,5 +99,15 @@ class User extends Authenticatable implements FilamentUser
     public function isUpline(): bool
     {
         return $this->hasAnyRole([UserRolesEnum::RESEARCH_MANAGER->value, UserRolesEnum::ADMIN->value]);
+    }
+
+    public static function verifyByEmail(string $email)
+    {
+        try {
+            User::whereEmail($email)->firstOrFail();
+        } catch (\Exception $e) {
+            throw new ModelNotFoundException('Email not found on our database.');
+        }
+
     }
 }

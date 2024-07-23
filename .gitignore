@@ -20,6 +20,7 @@ yarn-error.log
 
 app/Console/Commands/CreateFilamentUser.php
 app/Console/Commands/PreCpanelDeploy.php
+database/seeders/TestUserSeeder.php
 
 /docker-compose.yml
 /*.rest

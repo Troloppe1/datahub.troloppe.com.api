@@ -29,9 +29,12 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function verifyUserByEmail(): JsonResponse
+    public function verifyUserByEmail(Request $request): JsonResponse
     {
+        $request->validate(['email' => 'required|email']);
+        User::verifyByEmail($request->email);
         return response()->json(['message' => 'User exists'], Response::HTTP_OK);
+    
     }
 
     /**
