@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Facades\ImageUploaderFacade;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -36,23 +37,26 @@ class ImageUploaderService
     {
         $imageClientName = $uploadedFile->getClientOriginalName();
         $imageNewName = time() . '-' . str($imageClientName)->replace(' ', '');
-        $storagePath = storage_path('app/public/tmp/' . $imageNewName);
-        $publicUrl = 'storage/tmp/' . $imageNewName;
+        $storagePath = storage_path("app/public/tmp/{$imageNewName}");
+        $publicUrl = "storage/tmp/{$imageNewName}";
         return [$storagePath, $publicUrl];
     }
 
     /**
-     * Delete Image
+     * Delete Image. By default images are only deleted from tmp folder
+     * unless disk name is specified 
      *
      * @param string $imageUrl
+     * @param string $diskName
      * @return bool
      */
-    public function deleteImage(string $imageUrl): bool
+    public function deleteImage(string $imageUrl, string $diskName = ImageUploaderFacade::TMP_DISK_NAME): bool
     {
-        $storagePath = $this->getStoragePath($imageUrl);
-        if (Storage::exists($storagePath)) {
-            return Storage::delete($storagePath);
+        $storedImageBasename = basename($imageUrl);
+        if (Storage::disk($diskName)->exists($storedImageBasename)) {
+            return Storage::disk($diskName)->delete($storedImageBasename);
         }
+
         return false;
     }
 
@@ -64,25 +68,21 @@ class ImageUploaderService
      * @param string $destinationDir
      * @return bool | string
      */
-    public function moveImage(string $imageUrl, string $destinationDir): bool|string
+    public function moveImage(string $imageUrl, string $destinationDir, string $prefix = ''): bool|string
     {
         $tempStoragePath = $this->getStoragePath($imageUrl);
         if (Storage::exists($tempStoragePath)) {
             $basename = basename($tempStoragePath);
-            $destStoragePath = $destinationDir . '/' . $basename;
+            $destStoragePath = "{$destinationDir}/{$prefix}-{$basename}";
             Storage::move($tempStoragePath, $destStoragePath);
             return preg_replace('/^\/public/', '/storage', $destStoragePath);
         }
         return false;
     }
 
-    public function getStoragePath(string $imageUrl): string
+    private function getStoragePath(string $imageUrl): string
     {
         $imagePath = parse_url($imageUrl, PHP_URL_PATH);
         return preg_replace('/^\/storage/', '/public', $imagePath);
     }
 }
-
-
-
-

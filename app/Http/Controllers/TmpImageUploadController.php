@@ -6,7 +6,7 @@ use App\Services\ImageUploaderService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class ImageUploader extends Controller
+class TmpImageUploadController extends Controller
 {
     public function __construct(private readonly ImageUploaderService $imageService)
     {
@@ -28,17 +28,16 @@ class ImageUploader extends Controller
     }
 
     /**
-     * Deletes Image
+     * Deletes Tmp Images
      *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function deleteImage(Request $request)
+    public function deleteTmpImage(Request $request)
     {
         $request->validate([
-            'image_url' => 'required|string'
+            'image_url' => 'required|string',
         ]);
-
         $deleted = $this->imageService->deleteImage($request->image_url);
         if ($deleted)
             return response(status: 204);

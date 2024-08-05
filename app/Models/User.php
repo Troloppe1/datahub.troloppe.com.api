@@ -104,7 +104,7 @@ class User extends Authenticatable implements FilamentUser
     public static function verifyByEmail(string $email)
     {
         try {
-            User::whereEmail($email)->firstOrFail();
+            static::whereEmail($email)->firstOrFail();
         } catch (\Exception $e) {
             throw new ModelNotFoundException('Email not found on our database.');
         }

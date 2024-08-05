@@ -35,6 +35,7 @@ class StreetDataResource extends JsonResource
         if (request()->routeIs('street-data.index'))
             return $resource;
 
+        $resource['development_name'] = $this->development_name;
         $resource['description'] = $this->description;
         $resource['number_of_units'] = $this->number_of_units;
         $resource['contact_name'] = $this->contact_name;

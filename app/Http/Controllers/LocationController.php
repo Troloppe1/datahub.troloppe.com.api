@@ -22,7 +22,7 @@ class LocationController extends Controller
         $request->validate([
             "location_id" => 'numeric|nullable',
         ]);
-
+        
         $locationIdToActivate = $request->input('location_id');
         $activeLocation = $this->activateLocationService->activate($locationIdToActivate);
 
@@ -38,7 +38,7 @@ class LocationController extends Controller
 
     public function getActiveLocation(Request $request)
     {
-        $activeLocation = Location::where(['is_active' => true])->firstOrFail();
+        $activeLocation = Location::getActiveLocation();
         return new LocationResource($activeLocation);
     }
 }

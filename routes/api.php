@@ -1,11 +1,12 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ImageUploader;
+use App\Http\Controllers\TmpImageUploadController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationsController;
-use App\Http\Controllers\StreetData\FormFieldDataController;
+use App\Http\Controllers\StreetData\FormFieldDataController as StreetDataFormFieldDataController;
 use App\Http\Controllers\StreetData\OverviewController;
+use App\Http\Controllers\StreetData\SearchController as StreetDataSearchController;
 use App\Http\Controllers\StreetData\StreetDataController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -39,14 +40,29 @@ Route::controller(AuthController::class)->prefix('auth/')->name('api-auth.')->gr
     });
 });
 
-Route::controller(ImageUploader::class)->middleware('auth:sanctum')->name('temp-image-uploader.')->group(function () {
-    Route::post('/store-temp-image', 'storeToTmp')->name('store-to-tmp');
-    Route::delete('/delete-image', 'deleteImage')->name('delete-image');
-});
+Route::controller(TmpImageUploadController::class)
+    ->middleware('auth:sanctum')
+    ->name('temp-image-uploader.')
+    ->group(function () {
+        Route::post('/store-temp-image', 'storeToTmp')->name('store-to-tmp');
+        Route::delete('/delete-tmp-image', 'deleteTmpImage')->name('delete-tmp-image');
+    });
 
-Route::controller(FormFieldDataController::class)->prefix('street-data')->name('street-data.')->middleware('auth:sanctum')->group(function () {
-    Route::get('form-field-data', 'index')->name('form-field-data.index');
-});
+Route::controller(StreetDataFormFieldDataController::class)
+    ->prefix('street-data')
+    ->name('street-data.')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('form-field-data', 'index')->name('form-field-data.index');
+    });
+
+Route::controller(StreetDataSearchController::class)
+    ->name('street-data.search.')
+    ->prefix('street-data/search')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+    });
 
 Route::controller(OverviewController::class)
     ->name('street-data.overview.')

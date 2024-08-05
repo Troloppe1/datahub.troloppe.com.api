@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\ImageUploaderService;
 use App\Services\PruneExpiredTmpImageService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -15,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(PruneExpiredTmpImageService::class, fn() => new PruneExpiredTmpImageService());
+        $this->app->singleton(ImageUploaderService::class, fn() => new ImageUploaderService());  
     }
 
     /**

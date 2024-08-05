@@ -4,13 +4,9 @@ namespace App\Http\Controllers\StreetData;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LocationResource;
-use App\Http\Resources\SectionResource;
 use App\Http\Resources\SectorResource;
-use App\Http\Resources\SubSectorResource;
 use App\Models\Location;
-use App\Models\Section;
 use App\Models\Sector;
-use App\Models\SubSector;
 use App\Services\StreetDataService;
 use Illuminate\Http\Request;
 

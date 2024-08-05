@@ -43,6 +43,20 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+        
+        'tmp' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/tmp'),
+            'url' => env('APP_URL').'/storage',
+            'throw' => false,
+        ],
+        
+        'street_data_images' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/images/street-data'),
+            'url' => env('APP_URL').'/storage',
+            'throw' => false,
+        ],
 
         's3' => [
             'driver' => 's3',

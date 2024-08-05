@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Facades\ImageUploaderFacade;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,7 @@ class StreetData extends Model
     protected $casts = [
         'is_verified' => 'boolean'
     ];
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'creator_id', 'id');
@@ -36,5 +38,12 @@ class StreetData extends Model
     public function subSector(): BelongsTo
     {
         return $this->belongsTo(SubSector::class);
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($model) {
+            ImageUploaderFacade::deleteImage($model->image_path, ImageUploaderFacade::STREET_DATA_DISK_NAME);
+        });
     }
 }

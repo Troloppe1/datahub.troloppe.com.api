@@ -8,16 +8,19 @@ use App\Http\Requests\StreetDataRequest;
 use App\Http\Resources\StreetDataResource;
 use App\Models\StreetData;
 use App\Services\ImageUploaderService;
+use App\Services\StreetDataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Excel;
 
+
 class StreetDataController extends Controller
 {
     public function __construct(
+        private readonly StreetDataService $streetDataService,
         private readonly ImageUploaderService $imageUploaderService,
-        private readonly Excel $excel
+        private readonly Excel $excel,
     ) {
         //
     }
@@ -40,8 +43,8 @@ class StreetDataController extends Controller
         $streetData = new StreetData();
         $streetData->fill($request->safe()->all());
         $streetData->creator_id = Auth::user()->id;
-
-        $image_perm_path = $this->imageUploaderService->moveImage($streetData->image_path, '/public/images/street-data');
+        $prefix = $this->streetDataService->imagePrefixGenerator($streetData->section_id, $streetData->sector_id);
+        $image_perm_path = $this->imageUploaderService->moveImage($streetData->image_path, "/public/images/street-data/", $prefix);
 
         if ($image_perm_path) {
             $streetData->image_path = url($image_perm_path);
@@ -64,7 +67,7 @@ class StreetDataController extends Controller
      */
     public function update(StreetDataRequest $request, StreetData $streetDatum)
     {
-        \Gate::authorize('update', $streetDatum);
+        Gate::authorize('update', $streetDatum);
         $data = $request->safe()->all();
         $streetDatum->update($data);
         return response()->json($data);
@@ -75,7 +78,7 @@ class StreetDataController extends Controller
      */
     public function destroy(StreetData $streetDatum)
     {
-        \Gate::authorize('delete', $streetDatum);
+        Gate::authorize('delete', $streetDatum);
         $streetDatum->delete();
         return response()->json([], 204);
     }

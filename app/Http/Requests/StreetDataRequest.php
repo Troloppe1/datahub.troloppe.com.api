@@ -25,6 +25,7 @@ class StreetDataRequest extends FormRequest
             'is_verified' => request()->routeIs('street-data.update') ? 'required|boolean' : '',
             'unique_code' => 'string|nullable',
             'street_address' => 'required|string',
+            'development_name' => 'string|nullable',
             'description' => 'required|string',
             'sector_id' => 'required|numeric',
             'sub_sector_id' => 'required|numeric',
