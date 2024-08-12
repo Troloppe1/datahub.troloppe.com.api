@@ -27,3 +27,4 @@ database/seeders/TestUserSeeder.php
 ~docker-compose.yml
 
 .htaccess
+client.rest

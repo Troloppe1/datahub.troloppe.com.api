@@ -21,3 +21,12 @@ function replaceFileName(string $fileName, string $newFileName): string
 {
     return preg_replace("/[a-zA-Z]+(?=\.[a-zA-Z]+)/", $newFileName, $fileName);
 }
+
+/**
+ * Titlecase 
+ * @param mixed $str
+ * @return string
+ */
+function titleCase($str) {
+    return ucwords(str_replace("_", " ", $str));
+}

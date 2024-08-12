@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TmpImageUploadController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\SectorController;
 use App\Http\Controllers\StreetData\FormFieldDataController as StreetDataFormFieldDataController;
 use App\Http\Controllers\StreetData\OverviewController;
 use App\Http\Controllers\StreetData\SearchController as StreetDataSearchController;
@@ -94,3 +95,5 @@ Route::controller(NotificationsController::class)
         Route::put('mark-as-read', 'markAsRead')->name('mark-as-read');
         Route::delete('delete-all', 'deleteAll')->name('delete-all');
     });
+
+Route::apiResource('sectors', SectorController::class)->middleware('auth:sanctum')->only('store');

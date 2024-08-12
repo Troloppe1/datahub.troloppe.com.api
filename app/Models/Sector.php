@@ -10,6 +10,8 @@ class Sector extends Model
 {
     use HasFactory;
 
+    protected $fillable = ["name"];
+    
     public function subSectors(): HasMany
     {
         return $this->hasMany(SubSector::class);
