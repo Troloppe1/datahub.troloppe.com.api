@@ -12,6 +12,7 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Hyperlink;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class StreetDataExport implements
@@ -44,12 +45,14 @@ class StreetDataExport implements
             'Section',
             'Sector',
             'Sub Sector',
+            'No. of Units',
+            'Size',
             'Contact Name',
             'Contact Numbers',
             'Contact Email',
             'Construction Status',
             'Verified',
-            'Image Link',
+            'Image',
             'Geolocation',
             'Created At',
         ];
@@ -66,14 +69,16 @@ class StreetDataExport implements
             $streetDatum->location->name,
             $streetDatum->section->name,
             titleCase($streetDatum->sector->name),
-            $streetDatum->subSector->name,
+            $streetDatum->subSector?->name,
+            $streetDatum->number_of_units,
+            $streetDatum->size,
             $streetDatum->contact_name,
             $streetDatum->contact_numbers,
             $streetDatum->contact_email,
             titleCase($streetDatum->construction_status),
             $streetDatum->is_verified,
-            $streetDatum->image_path,
-            $streetDatum->geolocation,
+            $this->hyperlink($streetDatum->image_path, "View Image"),
+            $this->hyperlink($streetDatum->geolocation,"View Geolocation"),
             $streetDatum->created_at,
         ];
     }
@@ -106,5 +111,10 @@ class StreetDataExport implements
     public function startCell(): string
     {
         return 'A4';
+    }
+
+    private function hyperlink(string $linkLocation, string $friendlyName): string
+    {
+        return "=HYPERLINK(\"{$linkLocation}\",\"{$friendlyName}\")";
     }
 }

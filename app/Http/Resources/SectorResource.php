@@ -16,7 +16,7 @@ class SectorResource extends JsonResource
     {
         $resource = [
             'id' => $this->id,
-            'name' => $this->name,
+            'name' => ucwords($this->name),
         ];
         $isFormFieldRequest = request()->routeIs('street-data.form-field-data.index');
 
