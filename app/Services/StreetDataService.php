@@ -11,7 +11,35 @@ class StreetDataService
 {
     private $uniqueCodeQueryStmt = "SELECT T2.latest_id as id, T2.value, T1.location_id from street_data T1 JOIN (SELECT unique_code as value, MAX(id) as latest_id from street_data where deleted_at IS NULL GROUP BY unique_code ) T2 ON T1.id = T2.latest_id WHERE T2.value IS NOT NULL;";
 
-    private $searchedStreetDataStmt = "SELECT T2.latest_id as id, T1.street_address as street_address, T1.development_name as development_name, T2.value as unique_code, T1.image_path as image_path from street_data T1 JOIN (SELECT unique_code as value, MAX(id) as latest_id from street_data where deleted_at IS NULL GROUP BY unique_code ) T2 ON T1.id = T2.latest_id WHERE T2.value IS NOT NULL AND location_id = :location_id AND (street_address LIKE :street_address_q OR development_name LIKE :development_name_q OR unique_code LIKE :unique_code_q);";
+    private $searchedStreetDataStmt = "WITH latest_street_data AS 
+                                        (
+                                        SELECT
+                                                unique_code as value,
+                                                MAX(id) as latest_id
+                                        from
+                                                street_data
+                                        where
+                                                deleted_at IS NULL
+                                        GROUP BY
+                                            unique_code
+                                        )
+                                        SELECT
+                                            l.latest_id as id,
+                                            s.street_address as street_address,
+                                            s.development_name as development_name,
+                                            l.value as unique_code,
+                                            s.image_path as image_path,
+                                            s.location_id as location_id
+                                        FROM
+                                            street_data s
+                                        JOIN latest_street_data l ON
+                                            s.id = l.latest_id
+                                        where
+                                            value IS NOT NULL
+                                            AND location_id = :location_id
+                                            AND (street_address LIKE :street_address_q
+                                                OR development_name LIKE :development_name_q
+                                                OR unique_code LIKE :unique_code_q);";
 
     /**
      * Returns all distinct unique street data codes
@@ -48,6 +76,6 @@ class StreetDataService
     {
         $section = Section::find($sectionId);
         $sector = Sector::find($sectorId);
-        return str("{$section->name}-{$sector->name}")->replace(" ", "-", )->lower()->value();
+        return str("{$section->name}-{$sector->name}")->replace(" ", "-",)->lower()->value();
     }
 }
