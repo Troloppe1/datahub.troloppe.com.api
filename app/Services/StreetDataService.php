@@ -15,7 +15,7 @@ class StreetDataService
                                         (
                                         SELECT
                                                 unique_code as value,
-                                                MAX(id) as latest_id
+                                                MAX(created_at) as latest_created_at
                                         from
                                                 street_data
                                         where
@@ -24,18 +24,23 @@ class StreetDataService
                                             unique_code
                                         )
                                         SELECT
-                                            l.latest_id as id,
+                                            s.id as id,
                                             s.street_address as street_address,
                                             s.development_name as development_name,
                                             l.value as unique_code,
                                             s.image_path as image_path,
-                                            s.location_id as location_id
+                                            s.location_id as location_id,
+                                            s.is_verified as is_verified,
+                                            s.created_at
                                         FROM
                                             street_data s
                                         JOIN latest_street_data l ON
-                                            s.id = l.latest_id
+                                            s.created_at = l.latest_created_at
                                         where
                                             value IS NOT NULL
+                                            AND is_verified = true
+                                            AND s.unique_code = l.value
+                                            AND s.created_at = l.latest_created_at
                                             AND location_id = :location_id
                                             AND (street_address LIKE :street_address_q
                                                 OR development_name LIKE :development_name_q
