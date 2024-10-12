@@ -34,8 +34,7 @@ class StreetDataExport implements
     public function headings(): array
     {
         return [
-
-            '#',
+            'id',
             'Creator Name',
             'Unique_code',
             'Street Address',
@@ -78,7 +77,7 @@ class StreetDataExport implements
             titleCase($streetDatum->construction_status),
             $streetDatum->is_verified,
             $this->hyperlink($streetDatum->image_path, "View Image"),
-            $this->hyperlink($streetDatum->geolocation,"View Geolocation"),
+            $this->hyperlink($streetDatum->geolocation, "View Geolocation"),
             $streetDatum->created_at,
         ];
     }
@@ -115,6 +114,6 @@ class StreetDataExport implements
 
     private function hyperlink(string $linkLocation, string $friendlyName): string
     {
-        return "=HYPERLINK(\"{$linkLocation}\",\"{$friendlyName}\")";
+        return $linkLocation ? "=HYPERLINK(\"{$linkLocation}\",\"{$friendlyName}\")" : null;
     }
 }
