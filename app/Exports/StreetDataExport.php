@@ -112,7 +112,7 @@ class StreetDataExport implements
         return 'A4';
     }
 
-    private function hyperlink(string | null $linkLocation, string $friendlyName): string
+    private function hyperlink(string | null $linkLocation, string $friendlyName): string | null
     {
         return $linkLocation ? "=HYPERLINK(\"{$linkLocation}\",\"{$friendlyName}\")" : null;
     }
