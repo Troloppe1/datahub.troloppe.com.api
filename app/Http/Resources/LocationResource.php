@@ -20,8 +20,8 @@ class LocationResource extends JsonResource
             "name" => $this->name,
             "is_active" => $this->is_active
         ];
-        $isFormFieldRequest = request()->routeIs('street-data.form-field-data.index');
-
+        $isFormFieldRequest = $request->routeIs('street-data.form-field-data.index');
+        
         if (!$isFormFieldRequest) {
             return $resource;
         }

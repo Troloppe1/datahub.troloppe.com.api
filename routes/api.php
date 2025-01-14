@@ -97,3 +97,5 @@ Route::controller(NotificationsController::class)
     });
 
 Route::apiResource('sectors', SectorController::class)->middleware('auth:sanctum')->only('store');
+
+require base_path('/routes/test.php');

@@ -34,7 +34,6 @@ class AuthController extends Controller
         $request->validate(['email' => 'required|email']);
         User::verifyByEmail($request->email);
         return response()->json(['message' => 'User exists'], Response::HTTP_OK);
-    
     }
 
     /**
@@ -49,7 +48,11 @@ class AuthController extends Controller
 
         if (Auth::guard('web')->attempt($creds)) {
             $authRequest->session()->regenerate();
-            return Auth::user()->getUserData();
+            /**
+             * @var User
+             */
+            $user = Auth::user();
+            return $user->getUserData();
         }
 
         throw ValidationException::withMessages([
@@ -84,7 +87,9 @@ class AuthController extends Controller
     public function changePassword(ChangePasswordRequest $changePasswordRequest): JsonResponse
     {
         $creds = $changePasswordRequest->validated();
-
+        /**
+         * @var User
+         */
         $user = Auth::user();
         $user->password = Hash::make($creds['password']);
         $user->save();
