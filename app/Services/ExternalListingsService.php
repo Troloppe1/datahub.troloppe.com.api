@@ -2,76 +2,96 @@
 
 namespace App\Services;
 
-use \Illuminate\Database\Query\Builder; // Importing the Builder class for query building.
-use Illuminate\Support\Facades\DB; // Importing Laravel's DB facade for database interactions.
+use \Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 
 class ExternalListingsService
 {
     /**
-     * Gets the query builder instance for the external listings view.
+     * Initializes a query builder for the "external_listings.listings" table
+     * using the PostgreSQL connection.
+     * 
+     * @param string $table
      *
-     * @return Builder
+     * @return Builder Query builder instance.
      */
-    private function getViewBuilder(): Builder
+    private function getQueryBuilder(string $table = "external_listings.listings"): Builder
     {
-        // Establishes a connection to the PostgreSQL database and prepares a query builder for the "external_listings.listings" table.
-        $postgresDb = DB::connection("pgsql");
-        return $postgresDb->table("external_listings.listings");
+        // Connects to the PostgreSQL database and sets up the query builder for the specified table.
+        $postgresDb = DB::connection("alt_pgsql");
+        return $postgresDb->table($table);
     }
 
     /**
-     * Fetches all records from the external listings table.
+     * Retrieves all records from the external listings table.
      *
-     * @return \Illuminate\Support\Collection
+     * @return \Illuminate\Support\Collection Collection of all records.
      */
     public function getAll()
     {
-        // Uses the query builder to retrieve all records.
-        return $this->getViewBuilder()->get();
+        // Fetches all records without filtering or pagination.
+        return $this->getQueryBuilder()->get();
     }
 
     /**
-     * Fetches paginated data from the external listings table.
+     * Retrieves paginated data from the external listings table, with optional filtering
+     * based on the `updated_by_id` parameter.
      *
-     * @param int|null $updatedById Filter records by the 'updated_by_id' column (optional).
-     * @param int $limit Number of records per page.
-     * @param int $pageNumber Current page number.
-     * @return array Returns the paginated data, including total pages, records, and metadata.
+     * @param int $limit Number of records per page (default: 10).
+     * @param int $page The current page number (default: 1).
+     * @param int|null $updatedById Filter results by `updated_by_id` (optional).
+     *
+     * @return array Paginated data including results and metadata.
      */
-    public function getPaginatedData(int $limit = 10, int $pageNumber = 1, int|null $updatedById = null)
+    public function getPaginatedData($limit = 10, $page = 1, $updatedById = null)
     {
-        // Applies a filter on the query if $updatedById is provided.
-        $viewBuilder = $this->getViewBuilder()->when(
+        // Sanitize input parameters
+        $limit = max(1, intval($limit));
+        $page = max(1, intval($page));
+        $updatedById = $updatedById ? intval($updatedById) : null;
+
+        // Build the query
+        $query = $this->getQueryBuilder()->when(
             $updatedById,
-            function ($query, $updatedById) {
-                $query->where('updated_by_id', '=', $updatedById);
-            }
+            fn($query) => $query->where('updated_by_id', '=', $updatedById)
         );
 
-        // Calculates the total number of records that match the query.
-        $totalRecords = $viewBuilder->count();
-        // Calculates the total number of pages based on the limit.
-        $totalPages = ceil($totalRecords / $limit);
-        // Calculates the offset for the current page.
-        $offset = ($pageNumber - 1) * $limit;
-        // Calculates next page.
-        $nextPage = $pageNumber < $totalPages ? $pageNumber + 1 : null;
-        // Calculates next page.
-        $prevPage = $pageNumber > 1 ? $pageNumber - 1 : null;
+        // Get total records
+        $totalRecords = $query->count();
 
-        // Retrieves the records for the current page.
-        $results =  $viewBuilder
+        // Return early if no records are found
+        if ($totalRecords === 0) {
+            return [
+                "data" => [],
+                "totalPages" => 0,
+                "limit" => $limit,
+                "totalRecords" => 0,
+                "currentPage" => $page,
+                "nextPage" => null,
+                "prevPage" => null
+            ];
+        }
+
+        // Calculate pagination details
+        $totalPages = ceil($totalRecords / $limit);
+        $offset = ($page - 1) * $limit;
+        $nextPage = $page < $totalPages ? $page + 1 : null;
+        $prevPage = $page > 1 ? $page - 1 : null;
+
+        // Retrieve paginated data
+        $data = $query
             ->limit($limit)
-            ->skip($offset)
+            ->offset($offset)
+            ->orderBy('Date', 'desc')
             ->get();
 
-        // Returns the paginated data with metadata.
+        // Return data with metadata
         return [
-            "results" => $results,
+            "data" => $data,
             "totalPages" => $totalPages,
-            "recordsPerPage" => $limit,
-            "totalRecords" =>  $totalRecords,
-            "currentPage" => $pageNumber,
+            "limit" => $limit,
+            "totalRecords" => $totalRecords,
+            "currentPage" => $page,
             "nextPage" => $nextPage,
             "prevPage" => $prevPage
         ];

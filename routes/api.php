@@ -1,9 +1,17 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ExternalListings\ExternalListingsController;
 use App\Http\Controllers\TmpImageUploadController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\PropertyData\InitialController as PropertyInitialController;
+use App\Http\Controllers\PropertyData\RegionsController as PropertyRegionsController;
+use App\Http\Controllers\PropertyData\LocationsController as PropertyLocationsController;
+use App\Http\Controllers\PropertyData\SectionsController as PropertySectionsController;
+use App\Http\Controllers\PropertyData\LgasController as PropertyLgasController;
+use App\Http\Controllers\PropertyData\LcdasController as PropertyLcdasController;
+use App\Http\Controllers\PropertyData\SubSectorsController as PropertySubSectorsController;
 use App\Http\Controllers\SectorController;
 use App\Http\Controllers\StreetData\FormFieldDataController as StreetDataFormFieldDataController;
 use App\Http\Controllers\StreetData\OverviewController;
@@ -91,11 +99,69 @@ Route::controller(NotificationsController::class)
     ->prefix('notifications')
     ->middleware('auth:sanctum')
     ->group(function () {
-        Route::get('all', 'allNotifications')->name('name');
+        Route::get('all', 'allNotifications')->name('all-notifications');
         Route::put('mark-as-read', 'markAsRead')->name('mark-as-read');
         Route::delete('delete-all', 'deleteAll')->name('delete-all');
     });
 
 Route::apiResource('sectors', SectorController::class)->middleware('auth:sanctum')->only('store');
 
-require base_path('/routes/test.php');
+Route::controller(ExternalListingsController::class)
+    ->name('external-listings.')
+    ->prefix('external-listings')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('listings', 'paginatedListings')->name('paginated-listings');
+    });
+
+Route::group(
+    [
+        'name' => 'property-data.',
+        'prefix' => 'property-data'
+    ],
+    function () {
+        Route::get('initial', [PropertyInitialController::class, 'getInitialData'])->name('get-initial-data');
+
+        Route::controller(PropertyRegionsController::class)
+            ->name('regions.')
+            ->prefix('regions')
+            ->group(function () {
+                Route::get('', 'getRegions')->name('get-regions');
+            });
+
+        Route::controller(PropertyLocationsController::class)
+            ->name('locations.')
+            ->prefix('locations')
+            ->group(function () {
+                Route::get('', 'getLocations')->name('get-locations');
+            });
+
+        Route::controller(PropertySectionsController::class)
+            ->name('sections.')
+            ->prefix('sections')
+            ->group(function () {
+                Route::get('', 'getSections')->name('get-sections');
+            });
+
+        Route::controller(PropertyLgasController::class)
+            ->name('lgas.')
+            ->prefix('lgas')
+            ->group(function () {
+                Route::get('', 'getLgas')->name('get-lgas');
+            });
+
+        Route::controller(PropertyLcdasController::class)
+            ->name('lcdas.')
+            ->prefix('lcdas')
+            ->group(function () {
+                Route::get('', 'getLcdas')->name('get-lcdas');
+            });
+
+        Route::controller(PropertySubSectorsController::class)
+            ->name('sub-sectors.')
+            ->prefix('sub-sectors')
+            ->group(function () {
+                Route::get('', 'getSubSectors')->name('get-sub-sectors');
+            });
+    }
+);
