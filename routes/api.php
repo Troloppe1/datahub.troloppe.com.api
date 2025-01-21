@@ -12,6 +12,9 @@ use App\Http\Controllers\PropertyData\SectionsController as PropertySectionsCont
 use App\Http\Controllers\PropertyData\LgasController as PropertyLgasController;
 use App\Http\Controllers\PropertyData\LcdasController as PropertyLcdasController;
 use App\Http\Controllers\PropertyData\SubSectorsController as PropertySubSectorsController;
+use App\Http\Controllers\PropertyData\DevelopersController as PropertyDevelopersController;
+use App\Http\Controllers\PropertyData\ListingAgentsController as PropertyListingAgentsController;
+use App\Http\Controllers\PropertyData\ListingSourcesController as PropertyListingSourcesController;
 use App\Http\Controllers\SectorController;
 use App\Http\Controllers\StreetData\FormFieldDataController as StreetDataFormFieldDataController;
 use App\Http\Controllers\StreetData\OverviewController;
@@ -162,6 +165,26 @@ Route::group(
             ->prefix('sub-sectors')
             ->group(function () {
                 Route::get('', 'getSubSectors')->name('get-sub-sectors');
+            });
+
+        Route::controller(PropertyDevelopersController::class)
+            ->name('developers.')
+            ->prefix('developers')
+            ->group(function () {
+                Route::get('', 'getDevelopers')->name('get-developers');
+            });
+        Route::controller(PropertyListingAgentsController::class)
+            ->name('listing-agents.')
+            ->prefix('listing-agents')
+            ->group(function () {
+                Route::get('', 'getListingAgents')->name('get-listing-agents');
+            });
+
+        Route::controller(PropertyListingSourcesController::class)
+            ->name('listing-sources.')
+            ->prefix('listing-sources')
+            ->group(function () {
+                Route::get('', 'getListingSources')->name('get-listing-sources');
             });
     }
 );

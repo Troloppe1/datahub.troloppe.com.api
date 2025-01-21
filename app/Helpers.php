@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Database\Query\Builder;
+
 function streetDataConstructionDetailMatcher(string $constructionDetail): string | null
 {
     return match ($constructionDetail) {
@@ -27,6 +29,7 @@ function replaceFileName(string $fileName, string $newFileName): string
  * @param mixed $str
  * @return string
  */
-function titleCase($str) {
+function titleCase($str)
+{
     return ucwords(str_replace("_", " ", $str));
 }

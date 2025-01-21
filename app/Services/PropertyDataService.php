@@ -3,10 +3,19 @@
 namespace App\Services;
 
 use \Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
 
 class PropertyDataService
 {
+    private function getOrderedByName(Builder $builder)
+    {
+        return $builder->orderBy('name')->get();
+    }
+
+    public function __construct(
+        private readonly PostgresDbService $postgresDbService,
+        private readonly FilterSortAndPaginateService $filterAndPaginateService,
+    ) {}
+
     /**
      * Initializes a query builder for the "external_listings.listings" table
      * using the PostgreSQL connection.
@@ -17,23 +26,21 @@ class PropertyDataService
      */
     private function getQueryBuilder(string $table): Builder
     {
-        // Connects to the PostgreSQL database and sets up the query builder for the specified table.
-        $postgresDb = DB::connection("alt_pgsql");
-        return $postgresDb->table($table);
+        return $this->postgresDbService->createQueryBuilder($table);
     }
 
     public function getInitialData()
     {
-        $selectedColumns = ['id', 'name'];
+        $selectedColumns = fn(...$extraColumns) => array_merge(['id', 'name'], $extraColumns);
 
-        $statesQueryBuilder = $this->getQueryBuilder('locations.states')->select($selectedColumns);
-        $sectorsQueryBuilder = $this->getQueryBuilder('public.sectors')->select($selectedColumns);
-        $offersQueryBuilder = $this->getQueryBuilder('public.offers')->select($selectedColumns);
+        $statesQueryBuilder = $this->getQueryBuilder('locations.states')->select($selectedColumns());
+        $sectorsQueryBuilder = $this->getQueryBuilder('public.sectors')->select($selectedColumns());
+        $offersQueryBuilder = $this->getQueryBuilder('public.offers')->select($selectedColumns());
 
         return [
-            "states" => $statesQueryBuilder->orderBy('name')->get(),
-            "sectors" => $sectorsQueryBuilder->orderBy('name')->get(),
-            "offers" => $offersQueryBuilder->orderBy('name')->get()
+            "states" => $this->getOrderedByName($statesQueryBuilder),
+            "sectors" => $this->getOrderedByName($sectorsQueryBuilder),
+            "offers" => $this->getOrderedByName($offersQueryBuilder)
         ];
     }
 
@@ -43,7 +50,7 @@ class PropertyDataService
         $locationsQueryBuilder->when($stateId, function (Builder $query, $stateId) {
             $query->where(['state_id' => $stateId]);
         });
-        return ["regions" => $locationsQueryBuilder->orderBy('name')->get()];
+        return ["regions" => $this->getOrderedByName($locationsQueryBuilder)];
     }
 
     public function getLocations(int $regionId = null)
@@ -52,7 +59,7 @@ class PropertyDataService
         $locationsQueryBuilder->when($regionId, function ($query, $regionId) {
             $query->where(['region_id' => $regionId]);
         });
-        return ["locations" => $locationsQueryBuilder->orderBy('name')->get()];
+        return ["locations" => $this->getOrderedByName($locationsQueryBuilder)];
     }
 
     public function getSections(int $locationId = null)
@@ -61,15 +68,16 @@ class PropertyDataService
         $sectionsQueryBuilder->when($locationId, function ($query, $locationId) {
             $query->where(['locality_id' => $locationId]);
         });
-        return ["sections" => $sectionsQueryBuilder->orderBy('name')->get()];
+        return ["sections" => $this->getOrderedByName($sectionsQueryBuilder)];
     }
+
     public function getLgas(int $regionId = null)
     {
         $lgasQueryBuilder = $this->getQueryBuilder('locations.lgas')->select(['id', 'name', 'region_id']);
         $lgasQueryBuilder->when($regionId, function ($query, $regionId) {
             $query->where(['region_id' => $regionId]);
         });
-        return ["lgas" => $lgasQueryBuilder->orderBy('name')->get()];
+        return ["lgas" => $this->getOrderedByName($lgasQueryBuilder)];
     }
 
     public function getLcdas(int $lgaId = null)
@@ -78,7 +86,7 @@ class PropertyDataService
         $lcdasQueryBuilder->when($lgaId, function ($query, $lgaId) {
             $query->where(['lga_id' => $lgaId]);
         });
-        return ["lcdas" => $lcdasQueryBuilder->orderBy('name')->get()];
+        return ["lcdas" => $this->getOrderedByName($lcdasQueryBuilder)];
     }
     public function getSubSectors(int $sectorId = null)
     {
@@ -86,6 +94,64 @@ class PropertyDataService
         $subSectorsQueryBuilder->when($sectorId, function ($query, $sectorId) {
             $query->where(['sector_id' => $sectorId]);
         });
-        return ["sub_sectors" => $subSectorsQueryBuilder->orderBy('name')->get()];
+        return ["sub_sectors" => $this->getOrderedByName($subSectorsQueryBuilder)];
+    }
+
+    public function getPaginatedDevelopersByKeyword($limit = 10, $page = 1, $keyword = '')
+    {
+        $queryBuilder = $this->getQueryBuilder('stakeholders.developers')
+            ->select(['id', 'name', 'phone_number', 'email']);
+
+        $this->getOrderedByName($queryBuilder);
+
+        $this->filterAndPaginateService->filterByKeywordBuilder(
+            $queryBuilder,
+            $keyword,
+            ["name", "phone_number", "email"]
+        );
+
+        return $this->filterAndPaginateService->getPaginatedData(
+            $queryBuilder,
+            $limit,
+            $page,
+            resourceName: 'developers'
+        );
+    }
+
+    public function getPaginatedListingAgentsByKeyword($limit = 10, $page = 1, $keyword = '')
+    {
+        $queryBuilder = $this->getQueryBuilder('stakeholders.listing_agents')
+            ->select(['id', 'name', 'phone_numbers', 'email']);
+
+        $this->filterAndPaginateService->filterByKeywordBuilder(
+            $queryBuilder,
+            $keyword,
+            ["name", "phone_numbers", "email"]
+        );
+
+        return $this->filterAndPaginateService->getPaginatedData(
+            $queryBuilder,
+            $limit,
+            $page,
+            resourceName: 'listing_agents'
+        );
+    }
+
+    public function getPaginatedListingSourcesByKeyword($limit = 10, $page = 1, $keyword = '')
+    {
+        $queryBuilder = $this->getQueryBuilder('external_listings.listing_sources')
+            ->select(['id', 'name']);
+
+        $this->filterAndPaginateService->filterByKeywordBuilder(
+            $queryBuilder,
+            $keyword,
+            ["name"]
+        );
+        return $this->filterAndPaginateService->getPaginatedData(
+            $queryBuilder,
+            $limit,
+            $page,
+            'listing_sources'
+        );
     }
 }
