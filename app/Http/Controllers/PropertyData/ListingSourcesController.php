@@ -13,7 +13,7 @@ class ListingSourcesController extends Controller
     public function getListingSources(Request $request)
     {
         // Retrieves query parameters with defaults if not provided.
-        $limit = $request->query("limit", 10);
+        $limit = $request->query("limit", 50);
         $page = $request->query("page", 1);
         $searchQuery = $request->query("q", '');
         return $this->propertyDataService->getPaginatedListingSourcesByKeyword($limit, $page, $searchQuery);

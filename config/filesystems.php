@@ -39,23 +39,23 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
-        
+
         'tmp' => [
             'driver' => 'local',
             'root' => storage_path('app/public/tmp'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'throw' => false,
         ],
-        
+
         'street_data_images' => [
             'driver' => 'local',
             'root' => storage_path('app/public/images/street-data'),
-            'url' => env('APP_URL').'/storage',
-            'throw' => false,
+            'url' => env('APP_URL') . '/storage/images/street-data',
+            'throw' => false
         ],
 
         's3' => [
@@ -85,6 +85,7 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('storage/images/street-data') => storage_path('app/public/images/street-data'),
     ],
 
 ];

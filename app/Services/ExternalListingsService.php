@@ -43,11 +43,17 @@ class ExternalListingsService
      * @param int $page The current page number (default: 1).
      * @param int|null $updatedById Filter results by `updated_by_id` (optional).
      * @param string | null $stringifiedAgFilterModel JSON Stringified AG Grid Filter model from the client 
+     * @param string | null $sortBy Column name to sort by. Can contain column followed by sort-order eg date:desc
      *
      * @return array Paginated data including results and metadata.
      */
-    public function getPaginatedData($limit = 10, $page = 1, $updatedById = null, $stringifiedAgFilterModel = null)
-    {
+    public function getPaginatedData(
+        $limit = 10,
+        $page = 1,
+        $updatedById = null,
+        $stringifiedAgFilterModel = null,
+        $sortBy = null
+    ) {
         $updatedById = $updatedById ? intval($updatedById) : null;
 
         $queryBuilder = $this->getQueryBuilder()->when(
@@ -55,10 +61,15 @@ class ExternalListingsService
             fn($query) => $query->where('updated_by_id', '=', $updatedById)
         );
 
+        if ($sortBy) {
+            $this->filterSortAndPaginateService->sortOperation($queryBuilder, $sortBy);
+        }
+
         if ($stringifiedAgFilterModel) {
             $agFilterModel = json_decode($stringifiedAgFilterModel, true);
             $this->filterSortAndPaginateService->filterUsingAgFilterModel($queryBuilder, $agFilterModel);
         }
+
         return $this->filterSortAndPaginateService->getPaginatedData($queryBuilder, $limit, $page);
     }
 }

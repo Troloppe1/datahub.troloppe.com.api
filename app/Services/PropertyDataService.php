@@ -2,19 +2,27 @@
 
 namespace App\Services;
 
+use Exception;
+use Illuminate\Database\Connection;
 use \Illuminate\Database\Query\Builder;
 
 class PropertyDataService
 {
+    private readonly Connection $dbConn;
+
+    public function __construct(
+        private readonly PostgresDbService $postgresDbService,
+        private readonly FilterSortAndPaginateService $filterAndPaginateService,
+    ) {
+        $this->dbConn = $postgresDbService->dbConn;
+    }
+
     private function getOrderedByName(Builder $builder)
     {
         return $builder->orderBy('name')->get();
     }
 
-    public function __construct(
-        private readonly PostgresDbService $postgresDbService,
-        private readonly FilterSortAndPaginateService $filterAndPaginateService,
-    ) {}
+
 
     /**
      * Initializes a query builder for the "external_listings.listings" table
@@ -97,7 +105,7 @@ class PropertyDataService
         return ["sub_sectors" => $this->getOrderedByName($subSectorsQueryBuilder)];
     }
 
-    public function getPaginatedDevelopersByKeyword($limit = 10, $page = 1, $keyword = '')
+    public function getPaginatedDevelopersByKeyword($limit = 50, $page = 1, $keyword = '')
     {
         $queryBuilder = $this->getQueryBuilder('stakeholders.developers')
             ->select(['id', 'name', 'phone_number', 'email']);
@@ -118,10 +126,12 @@ class PropertyDataService
         );
     }
 
-    public function getPaginatedListingAgentsByKeyword($limit = 10, $page = 1, $keyword = '')
+    public function getPaginatedListingAgentsByKeyword($limit = 50, $page = 1, $keyword = '')
     {
         $queryBuilder = $this->getQueryBuilder('stakeholders.listing_agents')
             ->select(['id', 'name', 'phone_numbers', 'email']);
+
+        $this->getOrderedByName($queryBuilder);
 
         $this->filterAndPaginateService->filterByKeywordBuilder(
             $queryBuilder,
@@ -133,14 +143,16 @@ class PropertyDataService
             $queryBuilder,
             $limit,
             $page,
-            resourceName: 'listing_agents'
+            resourceName: 'listingAgents'
         );
     }
 
-    public function getPaginatedListingSourcesByKeyword($limit = 10, $page = 1, $keyword = '')
+    public function getPaginatedListingSourcesByKeyword($limit = 50, $page = 1, $keyword = '')
     {
         $queryBuilder = $this->getQueryBuilder('external_listings.listing_sources')
             ->select(['id', 'name']);
+
+        $this->getOrderedByName($queryBuilder);
 
         $this->filterAndPaginateService->filterByKeywordBuilder(
             $queryBuilder,
@@ -151,7 +163,27 @@ class PropertyDataService
             $queryBuilder,
             $limit,
             $page,
-            'listing_sources'
+            'listingSources'
         );
+    }
+
+    public function createNewState(string $stateName)
+    {
+        $stateName = ucwords($stateName);
+        $builder = $this->getQueryBuilder("locations.states");
+
+        try {
+            $builder->insert(['name' => $stateName]);
+            $newState = $builder->select(['id', 'name'])->where('name', '=', $stateName)->first();
+            return ['success' => true, 'message' => "{$stateName}'s state created successfully", 'data' => ['state' => $newState]];
+        } catch (Exception $e) {
+
+            // Unique Constraint violation
+            if ($e->getCode() == 23505) {
+                return ['success' => false, 'message' => "{$stateName}'s state already exists"];
+            }
+
+            throw $e;
+        }
     }
 }

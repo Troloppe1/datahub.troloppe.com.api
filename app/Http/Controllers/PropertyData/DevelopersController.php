@@ -13,7 +13,7 @@ class DevelopersController extends Controller
     public function getDevelopers(Request $request)
     {
         // Retrieves query parameters with defaults if not provided.
-        $limit = $request->query("limit", 10);
+        $limit = $request->query("limit", 50);
         $page = $request->query("page", 1);
         $searchQuery = $request->query("q", '');
         return $this->propertyDataService->getPaginatedDevelopersByKeyword($limit, $page, $searchQuery);

@@ -40,6 +40,20 @@ class FilterSortAndPaginateService
         }
     }
 
+    /**
+     *  * Applies sorting to a query builder instance.
+     *
+     * @param Builder $queryBuilder The query builder instance to apply filters to.
+     * @param string $sortBy Column name to sort by. Can contain column followed by sort-order eg date:desc
+   
+     * @return void
+     */
+    public function sortOperation(Builder $queryBuilder, string $sortBy)
+    {
+        [$sortColumn, $sortOrder] = str_contains($sortBy, ':') ? explode(":", $sortBy) : [$sortBy, 'asc'];
+        $queryBuilder->orderBy($sortColumn, $sortOrder);
+    }
+
     public function filterByKeywordBuilder(Builder $queryBuilder, string $keyword, array $searchColumns = [])
     {
         if (count($searchColumns) > 0) {

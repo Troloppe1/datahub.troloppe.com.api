@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PropertyData;
 
 use App\Http\Controllers\Controller;
 use App\Services\PropertyDataService;
+use Illuminate\Http\Request;
 
 class InitialController extends Controller
 {
