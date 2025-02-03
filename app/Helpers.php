@@ -33,3 +33,15 @@ function titleCase($str)
 {
     return ucwords(str_replace("_", " ", $str));
 }
+
+
+function formatServiceResponse(bool $status, string $message, mixed $data = null)
+{
+    $resp =  ['success' => $status, 'message' => $message];
+
+    if (!empty($data)){
+        $resp['data'] = $data;
+    }
+
+    return $resp;
+}

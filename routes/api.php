@@ -16,7 +16,7 @@ use App\Http\Controllers\PropertyData\SubSectorsController as PropertySubSectors
 use App\Http\Controllers\PropertyData\DevelopersController as PropertyDevelopersController;
 use App\Http\Controllers\PropertyData\ListingAgentsController as PropertyListingAgentsController;
 use App\Http\Controllers\PropertyData\ListingSourcesController as PropertyListingSourcesController;
-use App\Http\Controllers\PropertyData\IndexController as PropertyDataIndexController;
+use App\Http\Controllers\PropertyData\ResourceCreationController as PropertyDataResourceCreationController;
 use App\Http\Controllers\SectorController;
 use App\Http\Controllers\StreetData\FormFieldDataController as StreetDataFormFieldDataController;
 use App\Http\Controllers\StreetData\OverviewController;
@@ -119,6 +119,8 @@ Route::controller(ExternalListingsController::class)
     ->middleware('auth:sanctum')
     ->group(function () {
         Route::get('listings', 'paginatedListings');
+        Route::get('listings/{id}', 'show');
+        Route::post('listings', 'store');
     });
 
 // Property Data Group
@@ -132,9 +134,9 @@ Route::group(
         Route::get('/initial', [PropertyInitialController::class, 'getInitialData']);
 
         // Propert Data Index
-        Route::controller(PropertyDataIndexController::class)
+        Route::controller(PropertyDataResourceCreationController::class)
             ->group(function () {
-                Route::post('/create-state', 'createState');
+                Route::post('/create-resource', 'createResource');
             });
 
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use \Illuminate\Database\Query\Builder;
 
 class ExternalListingsService
@@ -71,5 +72,43 @@ class ExternalListingsService
         }
 
         return $this->filterSortAndPaginateService->getPaginatedData($queryBuilder, $limit, $page);
+    }
+
+    public function getExternalListingById(int $id)
+    {
+        try {
+            /**
+             * @var array
+             */
+            $data = $this->getQueryBuilder()->where('id', '=', $id)->first();
+
+            if (!$data) {
+                abort(404, 'External Listing not found');
+            }
+            
+            return formatServiceResponse(true, "External Listing Retrieved Successfully", $data);
+        } catch (Exception $e) {
+            return formatServiceResponse(false, $e->getMessage());
+        }
+    }
+    public function storeExternalListing(array $data)
+    {
+        try {
+            $this->getQueryBuilder("external_listings.properties")->insert($data);
+            return formatServiceResponse(true, "External Listing Created Successfully");
+        } catch (Exception $e) {
+            return formatServiceResponse(false, $e->getMessage());
+        }
+    }
+
+    public function deleteExternalListing(int $id)
+    {
+        // Ensure User deleting is the creator of the resource
+        try {
+            $this->getQueryBuilder("external_listings.properties")->delete($id);
+            return formatServiceResponse(true, "External Listing Deleted Successfully");
+        } catch (Exception $e) {
+            return formatServiceResponse(false, $e->getMessage());
+        }
     }
 }

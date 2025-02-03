@@ -108,14 +108,14 @@ class PropertyDataService
     public function getPaginatedDevelopersByKeyword($limit = 50, $page = 1, $keyword = '')
     {
         $queryBuilder = $this->getQueryBuilder('stakeholders.developers')
-            ->select(['id', 'name', 'phone_number', 'email']);
+            ->select(['id', 'name', 'phone_numbers', 'email']);
 
         $this->getOrderedByName($queryBuilder);
 
         $this->filterAndPaginateService->filterByKeywordBuilder(
             $queryBuilder,
             $keyword,
-            ["name", "phone_number", "email"]
+            ["name", "phone_numbers", "email"]
         );
 
         return $this->filterAndPaginateService->getPaginatedData(
@@ -167,23 +167,56 @@ class PropertyDataService
         );
     }
 
-    public function createNewState(string $stateName)
+    public function createNewResource(string $resourceName, array $values)
     {
-        $stateName = ucwords($stateName);
-        $builder = $this->getQueryBuilder("locations.states");
+        $resourceTableMap = [
+            'state' => 'locations.states',
+            'region' => 'locations.regions',
+            'location' => 'locations.localities',
+            'section' => 'locations.sections',
+            'lga' => 'locations.lgas',
+            'lcda' => 'locations.lcdas',
+            'subSector' => 'public.sub_sectors'
+        ];
+
+        if ($resourceName === 'section') {
+            $values['locality_id'] = $values['location_id'];
+            unset($values['location_id']);
+        }
+
+        if (!isset($resourceTableMap[$resourceName])) {
+            return ['success' => false, 'message' => "Invalid resource: {$resourceName}"];
+        }
+
+        if (!isset($values['name'])) {
+            return ['success' => false, 'message' => "Input must contain a name property with value"];
+        }
+
+        $resourceTableName = $resourceTableMap[$resourceName];
+        $builder = $this->getQueryBuilder($resourceTableName);
+        $statusMessages = $this->getResourceStatusMessages($resourceName, $values['name']);
 
         try {
-            $builder->insert(['name' => $stateName]);
-            $newState = $builder->select(['id', 'name'])->where('name', '=', $stateName)->first();
-            return ['success' => true, 'message' => "{$stateName}'s state created successfully", 'data' => ['state' => $newState]];
+
+            $builder->insert($values);
+            $newResource = $builder->select(['id', 'name'])->where('name', '=', $values['name'])->first();
+            return formatServiceResponse(true, $statusMessages['success'], [$resourceName => $newResource]);
         } catch (Exception $e) {
-
-            // Unique Constraint violation
+            // Unique Constraint violation for Postgres
             if ($e->getCode() == 23505) {
-                return ['success' => false, 'message' => "{$stateName}'s state already exists"];
+                return formatServiceResponse(false, $statusMessages['error']);
             }
-
             throw $e;
         }
+    }
+
+    private function getResourceStatusMessages(string $resourceName, string $resourceValueName)
+    {
+        $capitalizedResourceValueName = ucwords($resourceValueName);
+
+        return [
+            'success' => "{$capitalizedResourceValueName} {$resourceName} created successfully",
+            'error' => "{$capitalizedResourceValueName} {$resourceName} already exists"
+        ];
     }
 }

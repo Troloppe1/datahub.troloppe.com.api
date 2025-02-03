@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\ExternalListings;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreExternalListing;
+use App\Http\Requests\StoreExternalListingRequest;
 use App\Services\ExternalListingsService;
 use Illuminate\Http\Request;
 
@@ -28,5 +30,21 @@ class ExternalListingsController extends Controller
                 $sort_by
             )
         );
+    }
+
+    public function show(string $id)
+    {
+        return response()->json($this->externalListingsService->getExternalListingById($id));
+    }
+
+    public function store(StoreExternalListingRequest $request)
+    {
+        $data = $request->validated();
+        return response()->json($this->externalListingsService->storeExternalListing($data));
+    }
+
+    public function delete(string $id)
+    {
+        return response()->json($this->externalListingsService->deleteExternalListing($id));
     }
 }
