@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreExternalListingRequest extends FormRequest
+class ExternalListingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,6 +22,7 @@ class StoreExternalListingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            "id" => "sometimes|integer",
             "state_id" => "required|numeric",
             "region_id" => "required|numeric",
             "locality_id" => "required|numeric",
@@ -42,11 +43,11 @@ class StoreExternalListingRequest extends FormRequest
             "lease_price" => "nullable|numeric",
             "price_per_sqm" => "nullable|numeric",
             "service_charge" => "nullable|numeric",
-            "developer_id" => "required|numeric",
+            "developer_id" => "nullable|numeric",
             "listing_agent_id" => "required|numeric",
             "listing_source_id" => "required|numeric",
             "comment" => "nullable|string",
-            "updated_by_id" => "required|numeric"
+            "updated_by_id" => "sometimes|numeric"
         ];
     }
 }

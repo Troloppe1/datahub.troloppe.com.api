@@ -4,6 +4,9 @@ namespace App\Services;
 
 use Exception;
 use \Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Termwind\Components\Raw;
 
 class ExternalListingsService
 {
@@ -74,28 +77,38 @@ class ExternalListingsService
         return $this->filterSortAndPaginateService->getPaginatedData($queryBuilder, $limit, $page);
     }
 
-    public function getExternalListingById(int $id)
+    public function getExternalListingById(int $id, bool $view = true)
     {
-        try {
-            /**
-             * @var array
-             */
-            $data = $this->getQueryBuilder()->where('id', '=', $id)->first();
+        $schema = "external_listings";
+        $tableName = $view ? "listings" : "properties";
+        /**
+         * @var array
+         */
+        $data = $this->getQueryBuilder("$schema.$tableName")->where('id', '=', $id)->first();
 
-            if (!$data) {
-                abort(404, 'External Listing not found');
-            }
-            
-            return formatServiceResponse(true, "External Listing Retrieved Successfully", $data);
-        } catch (Exception $e) {
-            return formatServiceResponse(false, $e->getMessage());
+        if (!$data) {
+            abort(404, 'External Listing not found');
         }
+
+        return formatServiceResponse(true, "External Listing Retrieved Successfully", $data);
     }
     public function storeExternalListing(array $data)
     {
         try {
             $this->getQueryBuilder("external_listings.properties")->insert($data);
-            return formatServiceResponse(true, "External Listing Created Successfully");
+            $newExternalListing = $this->getQueryBuilder("external_listings.listings")->orderBy('id', 'desc')->first();
+            return formatServiceResponse(true, "External Listing Created Successfully", $newExternalListing);
+        } catch (Exception $e) {
+            return formatServiceResponse(false, $e->getMessage());
+        }
+    }
+
+    public function updateExternalListing(array $data, int $id)
+    {
+        try {
+            $this->getQueryBuilder("external_listings.properties")->where('id', '=', $id)->update($data);
+            $updatedExternalListing = $this->getQueryBuilder("external_listings.listings")->where('id', '=', $id)->first();
+            return formatServiceResponse(true, "External Listing Updated Successfully", $updatedExternalListing);
         } catch (Exception $e) {
             return formatServiceResponse(false, $e->getMessage());
         }
@@ -103,12 +116,66 @@ class ExternalListingsService
 
     public function deleteExternalListing(int $id)
     {
+        $queryBuilder = $this->getQueryBuilder("external_listings.properties");
+        $record =  $queryBuilder->where('id', '=', $id)->first();
+
         // Ensure User deleting is the creator of the resource
-        try {
-            $this->getQueryBuilder("external_listings.properties")->delete($id);
-            return formatServiceResponse(true, "External Listing Deleted Successfully");
-        } catch (Exception $e) {
-            return formatServiceResponse(false, $e->getMessage());
+        if ($record->updated_by_id != Auth()->user()->id || Auth()->user()->id != 1) {
+            abort(403, 'Forbidden access.');
         }
+        $queryBuilder->delete($id);
+        return formatServiceResponse(true, "External Listing Deleted Successfully", $record->updated_by_id);
+    }
+
+    public function sumForWidgets()
+    {
+        $totalExternalListings = $this->getQueryBuilder()->count();
+        $totalStatesCovered = $this->getQueryBuilder('locations.states')->count();
+        $totalSectorsCovered = $this->getQueryBuilder('public.sectors')->count();
+        $totalListingAgents = $this->getQueryBuilder('stakeholders.listing_agents')->count();
+
+        return [
+            "total_external_listings" => $totalExternalListings,
+            "total_states_covered" => $totalStatesCovered,
+            "total_sectors_covered" => $totalSectorsCovered,
+            "total_listing_agents" => $totalListingAgents
+        ];
+    }
+
+    public function visualSet()
+    {
+        return $this->getQueryBuilder()
+            ->select("Sector as name", DB::raw('count(*) as value'))
+            ->groupBy('Sector')
+            ->get();
+    }
+
+    public function agentPerformance()
+    {
+        return $this->getQueryBuilder()
+            ->select("Listing Agent as name", DB::raw('count(*) as value'))
+            ->groupBy('Listing Agent')
+            ->orderBy('value', 'desc')
+            ->limit(10)
+            ->get();
+    }
+
+    public function getAllListingAgents()
+    {
+        $tableName = "stakeholders.listing_agents";
+        $data = $this->getQueryBuilder($tableName)->get();
+        return formatServiceResponse(true, "External Listing Agents Retrieved Successfully", $data);
+    }
+
+    public function getListingAgentById(int $id)
+    {
+        $tableName = "stakeholders.listing_agents";
+        $data = $this->getQueryBuilder($tableName)->where('id', '=', $id)->first();
+
+        if (!$data) {
+            abort(404, 'External Listing Agent not found');
+        }
+
+        return formatServiceResponse(true, "External Listing Agent Retrieved Successfully", $data);
     }
 }

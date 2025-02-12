@@ -10,7 +10,7 @@ class ListingAgentsController extends Controller
 {
     public function __construct(private readonly PropertyDataService $propertyDataService) {}
 
-    public function getListingAgents(Request $request)
+    public function getPaginatedListingAgents(Request $request)
     {
         // Retrieves query parameters with defaults if not provided.
         $limit = $request->query("limit", 50);

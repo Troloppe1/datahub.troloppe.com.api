@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\ExternalListings;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreExternalListing;
-use App\Http\Requests\StoreExternalListingRequest;
+use App\Http\Requests\ExternalListing;
+use App\Http\Requests\ExternalListingRequest;
 use App\Services\ExternalListingsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ExternalListingsController extends Controller
 {
@@ -34,16 +35,23 @@ class ExternalListingsController extends Controller
 
     public function show(string $id)
     {
-        return response()->json($this->externalListingsService->getExternalListingById($id));
+        $view = filter_var(request()->query('view'), FILTER_VALIDATE_BOOLEAN);
+        return response()->json($this->externalListingsService->getExternalListingById($id, $view));
     }
 
-    public function store(StoreExternalListingRequest $request)
+    public function store(ExternalListingRequest $request)
     {
         $data = $request->validated();
         return response()->json($this->externalListingsService->storeExternalListing($data));
     }
+   
+    public function update(ExternalListingRequest $request, string $id)
+    {
+        $data = $request->validated();
+        return response()->json($this->externalListingsService->updateExternalListing($data, $id));
+    }
 
-    public function delete(string $id)
+    public function destroy(string $id)
     {
         return response()->json($this->externalListingsService->deleteExternalListing($id));
     }

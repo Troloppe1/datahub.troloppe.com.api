@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\StreetData;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class StreetDataOverviewService
 {
@@ -18,8 +20,12 @@ class StreetDataOverviewService
     {
         $totalStreetData = StreetData::count();
         $totalVerifiedStreetData = StreetData::where(['is_verified' => true])->count();
-        $userStreetData = auth()->user()->streetData()->count();
-        $userVerifiedStreetData = auth()->user()->streetData()->where(['is_verified' => true])->count();
+        /**
+         * @var User
+         */
+        $user = auth()->user();
+        $userStreetData = $user->streetData()->count();
+        $userVerifiedStreetData = $user->streetData()->where(['is_verified' => true])->count();
 
         return [
             "total_street_data" => $totalStreetData,
@@ -31,8 +37,8 @@ class StreetDataOverviewService
 
     public function forVisual()
     {
-        $verifiedStreetDataByLocation = \DB::select($this->sqlStatementsForVerifiedData['by_location']);
-        $verifiedStreetDataBySector =\DB::select($this->sqlStatementsForVerifiedData['by_sector']);
+        $verifiedStreetDataByLocation = DB::select($this->sqlStatementsForVerifiedData['by_location']);
+        $verifiedStreetDataBySector = DB::select($this->sqlStatementsForVerifiedData['by_sector']);
 
         return [
             "verified_street_data_by_location" => $verifiedStreetDataByLocation,
@@ -41,7 +47,7 @@ class StreetDataOverviewService
     }
     public function userPerformances()
     {
-        $verifiedStreetDataByStaff = \DB::select($this->sqlStatementsForVerifiedData['by_staff']);
+        $verifiedStreetDataByStaff = DB::select($this->sqlStatementsForVerifiedData['by_staff']);
 
         return [
             "verified_street_data_by_staff" => $verifiedStreetDataByStaff,

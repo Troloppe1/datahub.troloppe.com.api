@@ -121,7 +121,22 @@ Route::controller(ExternalListingsController::class)
         Route::get('listings', 'paginatedListings');
         Route::get('listings/{id}', 'show');
         Route::post('listings', 'store');
+        Route::put('listings/{id}', 'update');
+        Route::delete('listings/{id}', 'destroy');
     });
+
+Route::controller(\App\Http\Controllers\ExternalListings\OverviewController::class)
+    ->prefix('external-listings/overview')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('widget-set', 'widgetSet');
+        Route::get('visual-set', 'visualSet');
+        Route::get('agent-performance', 'agentPerformance');
+    });
+
+Route::apiResource('external-listings/agents', \App\Http\Controllers\ExternalListings\AgentsController::class)
+    ->middleware('auth:sanctum')
+    ->only(['index', 'show']);
 
 // Property Data Group
 Route::group(
