@@ -15,8 +15,24 @@ class AgentsController extends Controller
         return response()->json($this->externalListingsService->getAllListingAgents());
     }
 
-    public function show(string $id)
+    // Returns agent with listings
+    public function show(string $id, Request $request)
     {
-        return response()->json($this->externalListingsService->getListingAgentById(+$id));
+        $onlyListing = filter_var($request->query('only_listings'), FILTER_VALIDATE_BOOLEAN);
+        return response()->json($this->externalListingsService->getListingAgentById(+$id, $onlyListing));
+    }
+
+    public function update(string $id, Request $request)
+    {
+        $data = $request->validate([
+            'id' => 'integer|required',
+            'name' => 'required|string',
+            'address' => 'nullable|string',
+            'phone_numbers' => 'nullable|string',
+            'email' => 'nullable|string',
+            'website' => 'nullable|string',
+            'note' => 'nullable|string',
+        ]);
+        return response()->json($this->externalListingsService->updateListingAgent(+$id, $data));
     }
 }

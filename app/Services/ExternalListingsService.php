@@ -4,9 +4,7 @@ namespace App\Services;
 
 use Exception;
 use \Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Termwind\Components\Raw;
 
 class ExternalListingsService
 {
@@ -142,8 +140,17 @@ class ExternalListingsService
         ];
     }
 
-    public function visualSet()
+    public function visualSet($type = 'sectors')
     {
+        if ($type === 'top-10-locations'){
+            return $this->getQueryBuilder()
+            ->select("Location as name", DB::raw('count(*) as value'))
+            ->groupBy('Location')
+            ->orderBy('value','desc')
+            ->limit(10)
+            ->get();
+        }
+
         return $this->getQueryBuilder()
             ->select("Sector as name", DB::raw('count(*) as value'))
             ->groupBy('Sector')
@@ -152,30 +159,52 @@ class ExternalListingsService
 
     public function agentPerformance()
     {
-        return $this->getQueryBuilder()
-            ->select("Listing Agent as name", DB::raw('count(*) as value'))
-            ->groupBy('Listing Agent')
-            ->orderBy('value', 'desc')
+        return $this->getQueryBuilder('external_listings.listing_agents_ranked')
+            ->select(['id', 'name', 'total_listings as value'])
             ->limit(10)
             ->get();
     }
 
     public function getAllListingAgents()
     {
-        $tableName = "stakeholders.listing_agents";
+        $tableName = "external_listings.listing_agents_ranked";
         $data = $this->getQueryBuilder($tableName)->get();
         return formatServiceResponse(true, "External Listing Agents Retrieved Successfully", $data);
     }
 
-    public function getListingAgentById(int $id)
+    public function getListingAgentById(int $id, bool $onlyListings = false)
     {
-        $tableName = "stakeholders.listing_agents";
+        $tableName = "external_listings.listing_agents_ranked";
         $data = $this->getQueryBuilder($tableName)->where('id', '=', $id)->first();
 
         if (!$data) {
             abort(404, 'External Listing Agent not found');
         }
 
+        // Fetch agent's listings
+        $listings =  $this->getQueryBuilder('external_listings.summary_listings')
+            ->where('listing_agent_id', '=', $id)
+            ->get();
+
+        $onlyListings ? $data = $listings : $data->listings = $listings;
+
         return formatServiceResponse(true, "External Listing Agent Retrieved Successfully", $data);
+    }
+
+    public function updateListingAgent(int $id, array $data)
+    {
+        $tableName = "stakeholders.listing_agents";
+        $queryBuilder = $this->getQueryBuilder($tableName);
+        $agent = $queryBuilder->where('id', '=', $id)->first();
+
+        if (!$agent) {
+            abort(404, 'External Listing Agent not found');
+        }
+
+        $queryBuilder->update($data);
+
+        $tableName = "external_listings.listing_agents_ranked";
+        $data = $this->getQueryBuilder($tableName)->where('id', '=', $id)->first();
+        return formatServiceResponse(true, "External Listing Agent Updated Successfully", $data);
     }
 }

@@ -89,7 +89,7 @@ Route::controller(OverviewController::class)
     });
 
 // Street Data Resources
-Route::apiResource('street-data', StreetDataController::class)->middleware('auth:sanctum');
+Route::apiResource('street-data', StreetDataController::class)->middleware('auth:sanctum')->except(['store']);
 
 // Location 
 Route::controller(LocationController::class)
@@ -135,8 +135,7 @@ Route::controller(\App\Http\Controllers\ExternalListings\OverviewController::cla
     });
 
 Route::apiResource('external-listings/agents', \App\Http\Controllers\ExternalListings\AgentsController::class)
-    ->middleware('auth:sanctum')
-    ->only(['index', 'show']);
+    ->middleware('auth:sanctum');
 
 // Property Data Group
 Route::group(
@@ -153,8 +152,6 @@ Route::group(
             ->group(function () {
                 Route::post('/create-resource', 'createResource');
             });
-
-
 
         // Property Regions
         Route::controller(PropertyRegionsController::class)
@@ -204,12 +201,12 @@ Route::group(
             ->group(function () {
                 Route::get('', 'getDevelopers');
             });
-
+        
         // Property Listing Agents
         Route::controller(PropertyListingAgentsController::class)
             ->prefix('listing-agents')
             ->group(function () {
-                Route::get('', 'getListingAgents');
+                Route::get('', 'getPaginatedListingAgents');
             });
 
         // Property Listing Sources

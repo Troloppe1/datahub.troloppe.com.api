@@ -17,8 +17,9 @@ class OverviewController extends Controller
         return response()->json($this->externalListingsService->sumForWidgets());
     }
 
-    public function visualSet(){
-        return response()->json($this->externalListingsService->visualSet());
+    public function visualSet(Request $request){
+        $type = $request->query('type', 'sectors');
+        return response()->json($this->externalListingsService->visualSet($type));
     }
    
     public function agentPerformance(){
