@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('queue:work --max-time=270')->withoutOverlapping()->runInBackground();
         $schedule->command('app:prune-expired-tmp-image')->runInBackground();
+        $schedule->command('app:clean-expired-cache')->twiceDaily(3, 15);
     }
 
     /**
