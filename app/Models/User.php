@@ -68,7 +68,7 @@ class User extends Authenticatable implements FilamentUser
     public function sendPasswordResetNotification($token)
     {
         $clientBaseUrl = config('frontend_urls.reset_password');
-        $url = "{$clientBaseUrl}?token={$token}";
+        $url = "{$clientBaseUrl}?token={$token}&email={$this->email}";
         $this->notify(new ResetPasswordNotification($this->name, $url));
     }
 

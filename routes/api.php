@@ -89,7 +89,7 @@ Route::controller(OverviewController::class)
     });
 
 // Street Data Resources
-Route::apiResource('street-data', StreetDataController::class)->middleware('auth:sanctum')->except(['store']);
+Route::apiResource('street-data', StreetDataController::class)->middleware('auth:sanctum');
 
 // Location 
 Route::controller(LocationController::class)

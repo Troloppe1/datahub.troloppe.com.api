@@ -14,16 +14,10 @@ class SectorResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $resource = [
+        return  [
             'id' => $this->id,
             'name' => ucwords($this->name),
+            'sub_sectors' => SubSectorResource::collection($this->whenLoaded('subSectors'))
         ];
-        $isFormFieldRequest = request()->routeIs('street-data.form-field-data.index');
-
-        if (!$isFormFieldRequest) {
-            return $resource;
-        }
-        $resource['sub_sectors'] = SubSectorResource::collection($this->subSectors);
-        return $resource;
     }
 }

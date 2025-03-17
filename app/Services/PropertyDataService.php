@@ -70,7 +70,7 @@ class PropertyDataService
         return ["locations" => $this->getOrderedByName($locationsQueryBuilder)];
     }
 
-    public function getSections(int $locationId = null)
+    public function getSections(?int $locationId = null)
     {
         $sectionsQueryBuilder = $this->getQueryBuilder('locations.sections')->select(['id', 'name', 'locality_id as location_id']);
         $sectionsQueryBuilder->when($locationId, function ($query, $locationId) {
