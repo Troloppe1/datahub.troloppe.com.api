@@ -29,7 +29,7 @@ class ExternalListingRequest extends FormRequest
             "section_id" => "required|numeric",
             "lga_id" => "required|numeric",
             "lcda_id" => "required|numeric",
-            "street" => "required|string",
+            "street" => "nullable|string",
             "street_number" => "nullable|string",
             "development" => "nullable|string",
             "sector_id" => "required|numeric",
