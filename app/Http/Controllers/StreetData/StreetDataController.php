@@ -85,15 +85,22 @@ class StreetDataController extends Controller
 
     public function export(Request $request)
     {
-        $request->validate(['format' => 'string']);
+        $request->validate([
+            'format' => 'string',
+            'startDate' => 'nullable|date',
+            'endDate' => 'nullable|date',
+        ]);
+    
         $format = $request->format;
-
-        if ($format) {
-            return $this->excel->download(new StreetDataExport, "street-data.{$this->exportFormatType[$format]}");
-        }
-
-        return $this->excel->download(new StreetDataExport, "street-data.xlsx");
+        $startDate = $request->startDate;
+        $endDate = $request->endDate;
+    
+        return $this->excel->download(
+            new StreetDataExport($startDate, $endDate), 
+            "street-data." . ($this->exportFormatType[$format] ?? 'xlsx')
+        );
     }
+    
 
     private $exportFormatType = [
         'excel' => 'xlsx',

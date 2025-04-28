@@ -23,12 +23,26 @@ class StreetDataExport implements
     WithEvents,
     WithDrawings,
     WithCustomStartCell
-{
+    {
+        private $startDate;
+        private $endDate;
+
+        public function __construct($startDate = null, $endDate = null)
+    {
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
+    }
 
     public function query()
     {
-        return StreetData::query()
+        $query = StreetData::query()
             ->with('creator', 'location', 'section', 'sector', 'subSector');
+
+        if ($this->startDate && $this->endDate) {
+            $query->whereBetween('created_at', [$this->startDate, $this->endDate]);
+        }
+
+        return $query;
     }
 
     public function headings(): array
