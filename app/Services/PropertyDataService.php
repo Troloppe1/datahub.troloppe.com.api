@@ -2,19 +2,19 @@
 
 namespace App\Services;
 
+use App\QueryBuilders\PostgresDatahubDbBuilder;
 use Exception;
 use Illuminate\Database\Connection;
 use \Illuminate\Database\Query\Builder;
 
 class PropertyDataService
 {
-    private readonly Connection $dbConn;
 
     public function __construct(
-        private readonly PostgresDbService $postgresDbService,
+        private readonly PostgresDatahubDbBuilder $postgresDatahubDbBuilder,
         private readonly FilterSortAndPaginateService $filterAndPaginateService,
     ) {
-        $this->dbConn = $postgresDbService->dbConn;
+       
     }
 
     private function getOrderedByName(Builder $builder)
@@ -34,7 +34,7 @@ class PropertyDataService
      */
     private function getQueryBuilder(string $table): Builder
     {
-        return $this->postgresDbService->createQueryBuilder($table);
+        return $this->postgresDatahubDbBuilder->createQueryBuilder($table);
     }
 
     public function getInitialData()

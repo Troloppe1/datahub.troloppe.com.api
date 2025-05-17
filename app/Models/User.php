@@ -8,6 +8,7 @@ use App\Events\CreatingUser;
 use App\Events\UserCreated;
 use App\Notifications\PasswordChangeRequiredNotification;
 use App\Notifications\ResetPasswordNotification;
+use App\Services\PostgresDatahubUserService;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -76,6 +77,12 @@ class User extends Authenticatable implements FilamentUser
     {
         return str_ends_with($this->email, '@troloppe.com') && $this->hasRole('Admin');
     }
+
+    private static function getPostgresDatahubUserService(): PostgresDatahubUserService
+    {
+        return app(PostgresDatahubUserService::class);
+    }
+
     public static function booted()
     {
         static::creating(function (User $user) {
@@ -84,10 +91,23 @@ class User extends Authenticatable implements FilamentUser
                 $user->password = Hash::make($user->password);
             }
         });
+
         static::created(function (User $user) {
             if ($user->email !== 'paschal.okafor@troloppe.com') {
                 event(new UserCreated($user));
             }
+            // Create user in the PostgreSQL datahub database
+            self::getPostgresDatahubUserService()->createUser($user);
+        });
+
+        static::deleted(function (User $user) {
+            // Delete user from the PostgreSQL datahub database
+            self::getPostgresDatahubUserService()->deleteUser($user->id);
+        });
+
+        static::updated(function (User $user) {
+            // Update user in the PostgreSQL datahub database
+            self::getPostgresDatahubUserService()->updateUser($user->id, $user);
         });
     }
 
@@ -108,6 +128,5 @@ class User extends Authenticatable implements FilamentUser
         } catch (\Exception $e) {
             throw new ModelNotFoundException('Email not found on our database.');
         }
-
     }
 }

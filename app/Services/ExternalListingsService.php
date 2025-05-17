@@ -2,16 +2,17 @@
 
 namespace App\Services;
 
+use App\QueryBuilders\PostgresDatahubDbBuilder;
 use Exception;
 use \Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+;
 
 class ExternalListingsService
 {
     public function __construct(
-        private readonly PostgresDbService $postgresDbService,
+        private readonly PostgresDatahubDbBuilder $postgresDatahubDbBuilder,
         private readonly FilterSortAndPaginateService $filterSortAndPaginateService,
     ) {}
 
@@ -25,7 +26,7 @@ class ExternalListingsService
      */
     private function getQueryBuilder(string $table = "external_listings.listings"): Builder
     {
-        return $this->postgresDbService->createQueryBuilder($table);
+        return $this->postgresDatahubDbBuilder->createQueryBuilder($table);
     }
 
     /**

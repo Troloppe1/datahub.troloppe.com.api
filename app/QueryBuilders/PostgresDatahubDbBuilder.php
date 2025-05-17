@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace App\QueryBuilders;
 
 use Illuminate\Database\Connection;
 use \Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
-class PostgresDbService
+class PostgresDatahubDbBuilder
 {
     public readonly Connection $dbConn;
 
