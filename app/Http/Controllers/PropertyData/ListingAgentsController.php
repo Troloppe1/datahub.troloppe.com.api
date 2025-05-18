@@ -25,4 +25,13 @@ class ListingAgentsController extends Controller
             $this->propertyDataService->getPaginatedListingAgentsByKeyword($limit, $page, $searchQuery)
         );
     }
+
+    public function getListingAgentById(string $id){
+        $cacheKey = "listing_agent_{$id}";
+        $ttl = 60 * 10; // Cache for 5 minutes
+
+        return Cache::remember($cacheKey, $ttl, fn () => 
+            $this->propertyDataService->getListingAgentById(+$id)
+        );
+    }
 }

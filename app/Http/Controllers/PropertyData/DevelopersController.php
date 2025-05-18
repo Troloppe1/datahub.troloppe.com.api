@@ -5,6 +5,7 @@ namespace App\Http\Controllers\PropertyData;
 use App\Http\Controllers\Controller;
 use App\Services\PropertyDataService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DevelopersController extends Controller
 {
@@ -17,5 +18,14 @@ class DevelopersController extends Controller
         $page = $request->query("page", 1);
         $searchQuery = $request->query("q", '');
         return $this->propertyDataService->getPaginatedDevelopersByKeyword($limit, $page, $searchQuery);
+    }
+
+    public function getDeveloperById(string $id){
+        $cacheKey = "developer_{$id}";
+        $ttl = 60 * 10; // Cache for 5 minutes
+
+        return Cache::remember($cacheKey, $ttl, fn () => 
+            $this->propertyDataService->getDeveloperById(+$id)
+        );
     }
 }

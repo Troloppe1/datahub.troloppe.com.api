@@ -174,6 +174,7 @@ class ExternalListingsService
             if ($type === 'top-10-locations') {
                 return $this->getQueryBuilder()
                     ->select("Location as name", DB::raw('count(*) as value'))
+                    ->where('Location', '!=', null)
                     ->groupBy('Location')
                     ->orderBy('value', 'desc')
                     ->limit(10)

@@ -200,6 +200,7 @@ Route::group(
             ->prefix('developers')
             ->group(function () {
                 Route::get('', 'getDevelopers');
+                Route::get('/{id}', 'getDeveloperById');
             });
         
         // Property Listing Agents
@@ -207,6 +208,7 @@ Route::group(
             ->prefix('listing-agents')
             ->group(function () {
                 Route::get('', 'getPaginatedListingAgents');
+                Route::get('/{id}', 'getListingAgentById');
             });
 
         // Property Listing Sources
@@ -214,6 +216,7 @@ Route::group(
             ->prefix('listing-sources')
             ->group(function () {
                 Route::get('', 'getListingSources');
+                Route::get('/{id}', 'getListingSourceById');
             });
     }
 );

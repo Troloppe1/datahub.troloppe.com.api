@@ -52,7 +52,7 @@ class PropertyDataService
         ];
     }
 
-    public function getRegions(int $stateId = null)
+    public function getRegions(?int $stateId = null)
     {
         $locationsQueryBuilder = $this->getQueryBuilder('locations.regions')->select(['id', 'name', 'state_id']);
         $locationsQueryBuilder->when($stateId, function (Builder $query, $stateId) {
@@ -61,7 +61,7 @@ class PropertyDataService
         return ["regions" => $this->getOrderedByName($locationsQueryBuilder)];
     }
 
-    public function getLocations(int $regionId = null)
+    public function getLocations(?int $regionId = null)
     {
         $locationsQueryBuilder = $this->getQueryBuilder('locations.localities')->select(['id', 'name', 'region_id']);
         $locationsQueryBuilder->when($regionId, function ($query, $regionId) {
@@ -79,7 +79,7 @@ class PropertyDataService
         return ["sections" => $this->getOrderedByName($sectionsQueryBuilder)];
     }
 
-    public function getLgas(int $regionId = null)
+    public function getLgas(?int $regionId = null)
     {
         $lgasQueryBuilder = $this->getQueryBuilder('locations.lgas')->select(['id', 'name', 'region_id']);
         $lgasQueryBuilder->when($regionId, function ($query, $regionId) {
@@ -88,7 +88,7 @@ class PropertyDataService
         return ["lgas" => $this->getOrderedByName($lgasQueryBuilder)];
     }
 
-    public function getLcdas(int $lgaId = null)
+    public function getLcdas(?int $lgaId = null)
     {
         $lcdasQueryBuilder = $this->getQueryBuilder('locations.lcdas')->select(['id', 'name', 'lga_id']);
         $lcdasQueryBuilder->when($lgaId, function ($query, $lgaId) {
@@ -96,7 +96,7 @@ class PropertyDataService
         });
         return ["lcdas" => $this->getOrderedByName($lcdasQueryBuilder)];
     }
-    public function getSubSectors(int $sectorId = null)
+    public function getSubSectors(?int $sectorId = null)
     {
         $subSectorsQueryBuilder = $this->getQueryBuilder('public.sub_sectors')->select(['id', 'name', 'sector_id']);
         $subSectorsQueryBuilder->when($sectorId, function ($query, $sectorId) {
@@ -167,6 +167,21 @@ class PropertyDataService
         );
     }
 
+    public function getDeveloperById(int $id) {
+        return $this->getQueryBuilder('stakeholders.developers')
+        ->select(['id', 'name', 'phone_numbers', 'email'])->where('id', '=', $id)->first();
+    }
+
+    public function getListingAgentById(int $id) {
+        return $this->getQueryBuilder('stakeholders.listing_agents')
+        ->select(['id', 'name', 'phone_numbers', 'email'])->where('id', '=', $id)->first();
+    }
+
+    public function getListingSourceById(int $id) {
+        return $this->getQueryBuilder('stakeholders.listing_sources')
+        ->select(['id', 'name'])->where('id', '=', $id)->first();
+    }
+
     public function createNewResource(string $resourceName, array $values)
     {
         $resourceTableMap = [
@@ -176,7 +191,10 @@ class PropertyDataService
             'section' => 'locations.sections',
             'lga' => 'locations.lgas',
             'lcda' => 'locations.lcdas',
-            'subSector' => 'public.sub_sectors'
+            'subSector' => 'public.sub_sectors',
+            'developer' => 'stakeholders.developers',
+            'listingAgent' => 'stakeholders.listing_agents',
+            'listingSource' => 'external_listings.listing_sources'
         ];
 
         if ($resourceName === 'section') {
