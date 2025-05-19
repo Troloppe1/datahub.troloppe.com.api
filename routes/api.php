@@ -89,6 +89,7 @@ Route::controller(OverviewController::class)
     });
 
 // Street Data Resources
+Route::get('/street-data/export', [StreetDataController::class, 'export'])->middleware(['auth:sanctum', 'user_is_upline']);
 Route::apiResource('street-data', StreetDataController::class)->middleware('auth:sanctum');
 
 // Location 
@@ -118,6 +119,7 @@ Route::controller(ExternalListingsController::class)
     ->prefix('external-listings')
     ->middleware('auth:sanctum')
     ->group(function () {
+        Route::get('export', 'export');
         Route::get('listings', 'paginatedListings');
         Route::get('listings/{id}', 'show');
         Route::post('listings', 'store');

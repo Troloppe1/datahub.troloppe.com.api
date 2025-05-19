@@ -21,4 +21,3 @@ Route::get('/routes', [RouteController::class, 'index'])->name('api-routes');
 Route::get('/unauthorized', function () {
     return response('Unauthorized', 401);
 })->name('login');
-Route::get('/street-data/export', [StreetDataController::class, 'export'])->name('street-data.export')->middleware(['auth:web', 'user_is_upline']);

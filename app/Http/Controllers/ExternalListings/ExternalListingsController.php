@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\ExternalListings;
 
+use App\Exports\ExternalListingExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ExternalListing;
 use App\Http\Requests\ExternalListingRequest;
 use App\Services\ExternalListingsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ExternalListingsController extends Controller
 {
@@ -54,5 +56,22 @@ class ExternalListingsController extends Controller
     public function destroy(string $id)
     {
         return response()->json($this->externalListingsService->deleteExternalListing($id));
+    }
+
+    public function export(Request $request)
+    {
+        $request->validate([
+            'format' => 'string',
+            'startDate' => 'nullable|date',
+            'endDate' => 'nullable|date',
+        ]);
+    
+        $format = $request->format;
+        $startDate = $request->startDate;
+        $endDate = $request->endDate;
+    
+        return Excel::download(new ExternalListingExport($startDate, $endDate), 
+            "external-listings." . ($this->exportFormatType[$format] ?? 'xlsx')
+        );
     }
 }

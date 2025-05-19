@@ -3,7 +3,6 @@
 namespace App\Exports;
 
 use App\Models\StreetData;
-use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithCustomStartCell;
@@ -12,7 +11,6 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Cell\Hyperlink;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class StreetDataExport implements
@@ -23,15 +21,8 @@ class StreetDataExport implements
     WithEvents,
     WithDrawings,
     WithCustomStartCell
-    {
-        private $startDate;
-        private $endDate;
-
-        public function __construct($startDate = null, $endDate = null)
-    {
-        $this->startDate = $startDate;
-        $this->endDate = $endDate;
-    }
+{
+    public function __construct(private string |null $startDate, private string |null $endDate = null) {}
 
     public function query()
     {
