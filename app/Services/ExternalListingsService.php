@@ -6,8 +6,7 @@ use App\QueryBuilders\PostgresDatahubDbBuilder;
 use Exception;
 use \Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-;
+use Illuminate\Support\Facades\DB;;
 
 class ExternalListingsService
 {
@@ -57,22 +56,25 @@ class ExternalListingsService
         $page = 1,
         $updatedById = null,
         $stringifiedAgFilterModel = null,
-        $sortBy = null
+        $sortBy = null,
+        $userIsUpline = false
     ) {
 
         // Generate a unique cache key based on query parameters
         $cacheKey = "external_listings:page_{$page}:limit_{$limit}:updatedBy_{$updatedById}:sort_{$sortBy}:filter_" . md5(json_encode($stringifiedAgFilterModel));
 
         // Check cache first
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($limit, $page, $updatedById, $stringifiedAgFilterModel, $sortBy) {
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($limit, $page, $updatedById, $stringifiedAgFilterModel, $sortBy, $userIsUpline) {
 
             $updatedById = $updatedById ? intval($updatedById) : null;
-
-            $queryBuilder = $this->getQueryBuilder()->when(
-                $updatedById,
-                fn($query) => $query->where('updated_by_id', '=', $updatedById)
-            );
-
+            $queryBuilder = $this->getQueryBuilder();
+            if (!$userIsUpline) {
+                $queryBuilder->when(
+                    $updatedById,
+                    fn($query) => $query->where('updated_by_id', '=', $updatedById)
+                );
+            }
+            
             if ($sortBy) {
                 $this->filterSortAndPaginateService->sortOperation($queryBuilder, $sortBy);
             }

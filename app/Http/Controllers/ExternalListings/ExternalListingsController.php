@@ -30,7 +30,8 @@ class ExternalListingsController extends Controller
                 $page,
                 $updatedById,
                 $stringifiedAgFilterModel,
-                $sort_by
+                $sort_by,
+                Auth::user()->isUpline() // Check if the user is an upline
             )
         );
     }
