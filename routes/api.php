@@ -117,7 +117,7 @@ Route::apiResource('sectors', SectorController::class)->middleware('auth:sanctum
 // External Listings
 Route::controller(ExternalListingsController::class)
     ->prefix('external-listings')
-    ->middleware('auth:sanctum')
+    ->middleware(['auth:sanctum', 'user_not_adhoc_staff'])
     ->group(function () {
         Route::get('export', 'export');
         Route::get('listings', 'paginatedListings');
@@ -153,7 +153,7 @@ Route::group(
         Route::controller(PropertyDataResourceCreationController::class)
             ->group(function () {
                 Route::post('/create-resource', 'createResource');
-            });
+            })->middleware('user_is_upline');
 
         // Property Regions
         Route::controller(PropertyRegionsController::class)

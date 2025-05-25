@@ -60,32 +60,26 @@ class ExternalListingsService
         $userIsUpline = false
     ) {
 
-        // Generate a unique cache key based on query parameters
-        $cacheKey = "external_listings:page_{$page}:limit_{$limit}:updatedBy_{$updatedById}:sort_{$sortBy}:filter_" . md5(json_encode($stringifiedAgFilterModel));
 
-        // Check cache first
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($limit, $page, $updatedById, $stringifiedAgFilterModel, $sortBy, $userIsUpline) {
+        $updatedById = $updatedById ? intval($updatedById) : null;
+        $queryBuilder = $this->getQueryBuilder();
+        if (!$userIsUpline) {
+            $queryBuilder->when(
+                $updatedById,
+                fn($query) => $query->where('updated_by_id', '=', $updatedById)
+            );
+        }
 
-            $updatedById = $updatedById ? intval($updatedById) : null;
-            $queryBuilder = $this->getQueryBuilder();
-            if (!$userIsUpline) {
-                $queryBuilder->when(
-                    $updatedById,
-                    fn($query) => $query->where('updated_by_id', '=', $updatedById)
-                );
-            }
-            
-            if ($sortBy) {
-                $this->filterSortAndPaginateService->sortOperation($queryBuilder, $sortBy);
-            }
+        if ($sortBy) {
+            $this->filterSortAndPaginateService->sortOperation($queryBuilder, $sortBy);
+        }
 
-            if ($stringifiedAgFilterModel) {
-                $agFilterModel = json_decode($stringifiedAgFilterModel, true);
-                $this->filterSortAndPaginateService->filterUsingAgFilterModel($queryBuilder, $agFilterModel);
-            }
+        if ($stringifiedAgFilterModel) {
+            $agFilterModel = json_decode($stringifiedAgFilterModel, true);
+            $this->filterSortAndPaginateService->filterUsingAgFilterModel($queryBuilder, $agFilterModel);
+        }
 
-            return $this->filterSortAndPaginateService->getPaginatedData($queryBuilder, $limit, $page);
-        });
+        return $this->filterSortAndPaginateService->getPaginatedData($queryBuilder, $limit, $page);
     }
 
     public function getExternalListingById(int $id, bool $view = true)

@@ -68,6 +68,7 @@ class Kernel extends HttpKernel
         // 'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         // 'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
         'user_email_found' => \App\Http\Middleware\UserIsFoundByEmail::class,
-        'user_is_upline' => \App\Http\Middleware\EnsureUserIsUpline::class
+        'user_is_upline' => \App\Http\Middleware\EnsureUserIsUpline::class,
+        'user_not_adhoc_staff' => \App\Http\Middleware\EnsureUserIsNotAdhocStaff::class,
     ];
 }
