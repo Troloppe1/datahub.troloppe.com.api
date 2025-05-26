@@ -25,13 +25,12 @@ class ExternalListingsController extends Controller
         $stringifiedAgFilterModel = $request->query("ag_filter_model", null);
 
         return response()->json(
-            $this->externalListingsService->getPaginatedData(
+            ...$this->externalListingsService->getPaginatedData(
                 $limit,
                 $page,
                 $updatedById,
                 $stringifiedAgFilterModel,
                 $sort_by,
-                Auth::user()->isUpline() // Check if the user is an upline
             )
         );
     }
@@ -39,24 +38,24 @@ class ExternalListingsController extends Controller
     public function show(string $id)
     {
         $view = filter_var(request()->query('view'), FILTER_VALIDATE_BOOLEAN);
-        return response()->json($this->externalListingsService->getExternalListingById($id, $view));
+        return response()->json(...$this->externalListingsService->getExternalListingById($id, $view));
     }
 
     public function store(ExternalListingRequest $request)
     {
         $data = $request->validated();
-        return response()->json($this->externalListingsService->storeExternalListing($data));
+        return response()->json(...$this->externalListingsService->storeExternalListing($data));
     }
    
     public function update(ExternalListingRequest $request, string $id)
     {
         $data = $request->validated();
-        return response()->json($this->externalListingsService->updateExternalListing($data, $id));
+        return response()->json(...$this->externalListingsService->updateExternalListing($data, $id));
     }
 
     public function destroy(string $id)
     {
-        return response()->json($this->externalListingsService->deleteExternalListing($id));
+        return response()->json(...$this->externalListingsService->deleteExternalListing($id));
     }
 
     public function export(Request $request)

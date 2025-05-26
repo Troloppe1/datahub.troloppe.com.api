@@ -21,6 +21,8 @@ class EnsureUserIsUpline
             return $next($request);
         }
 
-        return redirect(RouteServiceProvider::HOME);
+        return response()->json([
+            'message' => 'Unauthorized access for non-upline users.',
+        ], 403);
     }
 }

@@ -29,7 +29,8 @@ class StreetDataResource extends JsonResource
             'image_path' => $this->image_path,
             'is_verified' => $this->is_verified,
             'created_at' => $this->created_at,
-            'creator' => str($this->creator->name)->title()
+            'creator' => str($this->creator->name)->title(),
+            'creator_id' => $this->creator->id
         ];
 
         if (request()->routeIs('street-data.index'))

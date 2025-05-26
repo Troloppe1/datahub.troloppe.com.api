@@ -151,9 +151,10 @@ Route::group(
 
         // Propert Data Index
         Route::controller(PropertyDataResourceCreationController::class)
+            ->middleware('user_not_adhoc_staff')
             ->group(function () {
                 Route::post('/create-resource', 'createResource');
-            })->middleware('user_is_upline');
+            });
 
         // Property Regions
         Route::controller(PropertyRegionsController::class)
@@ -204,7 +205,7 @@ Route::group(
                 Route::get('', 'getDevelopers');
                 Route::get('/{id}', 'getDeveloperById');
             });
-        
+
         // Property Listing Agents
         Route::controller(PropertyListingAgentsController::class)
             ->prefix('listing-agents')

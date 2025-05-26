@@ -35,13 +35,30 @@ function titleCase($str)
 }
 
 
-function formatServiceResponse(bool $status, string $message, mixed $data = null)
-{
-    $resp =  ['success' => $status, 'message' => $message];
+function formatServiceResponse(
+    bool $success,
+    string $message,
+    mixed $payload = null,
+    ?int $statusCode = null,
+    bool $rawResponse = false
+): array {
 
-    if (!empty($data)){
-        $resp['data'] = $data;
+    if ($rawResponse) {
+        return ['data' => $payload];
     }
 
-    return $resp;
+    $response = [
+        'data' => [
+            'success' => $success,
+            'message' => $message,
+        ],
+        'status' => $statusCode ?? ($success ? 200 : 400),
+    ];
+
+    if ($payload !== null) {
+        $response['data']['data'] = $payload;
+    }
+
+    return $response;
 }
+

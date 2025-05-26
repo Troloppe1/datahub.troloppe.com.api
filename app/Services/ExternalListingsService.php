@@ -5,7 +5,6 @@ namespace App\Services;
 use App\QueryBuilders\PostgresDatahubDbBuilder;
 use Exception;
 use \Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;;
 
 class ExternalListingsService
@@ -57,18 +56,11 @@ class ExternalListingsService
         $updatedById = null,
         $stringifiedAgFilterModel = null,
         $sortBy = null,
-        $userIsUpline = false
     ) {
 
 
         $updatedById = $updatedById ? intval($updatedById) : null;
         $queryBuilder = $this->getQueryBuilder();
-        if (!$userIsUpline) {
-            $queryBuilder->when(
-                $updatedById,
-                fn($query) => $query->where('updated_by_id', '=', $updatedById)
-            );
-        }
 
         if ($sortBy) {
             $this->filterSortAndPaginateService->sortOperation($queryBuilder, $sortBy);
@@ -79,7 +71,12 @@ class ExternalListingsService
             $this->filterSortAndPaginateService->filterUsingAgFilterModel($queryBuilder, $agFilterModel);
         }
 
-        return $this->filterSortAndPaginateService->getPaginatedData($queryBuilder, $limit, $page);
+        return formatServiceResponse(
+            true,
+            "External Listings Retrieved Successfully",
+            $this->filterSortAndPaginateService->getPaginatedData($queryBuilder, $limit, $page),
+            rawResponse: true,
+        );
     }
 
     public function getExternalListingById(int $id, bool $view = true)
@@ -88,17 +85,16 @@ class ExternalListingsService
         // Generate a unique cache key based on query parameters
         $cacheKey = "external_listings_by_id:id_{$id}:view_{$view}";
 
-        $data = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id, $view) {
-            $schema = "external_listings";
-            $tableName = $view ? "listings" : "properties";
-            /**
-             * @var array
-             */
-            return $this->getQueryBuilder("$schema.$tableName")->where('id', '=', $id)->first();
-        });
+        $schema = "external_listings";
+        $tableName = $view ? "listings" : "properties";
+        /**
+         * @var array
+         */
+        $data =  $this->getQueryBuilder("$schema.$tableName")->where('id', '=', $id)->first();
+
 
         if (!$data) {
-            abort(404, 'External Listing not found');
+            return formatServiceResponse(false, 'External Listing not found', null, 404);
         }
 
         return formatServiceResponse(true, "External Listing Retrieved Successfully", $data);
@@ -108,7 +104,6 @@ class ExternalListingsService
         try {
             $this->getQueryBuilder("external_listings.properties")->insert($data);
             $newExternalListing = $this->getQueryBuilder("external_listings.listings")->orderBy('id', 'desc')->first();
-            Cache::flush();
             return formatServiceResponse(true, "External Listing Created Successfully", $newExternalListing);
         } catch (Exception $e) {
             return formatServiceResponse(false, $e->getMessage());
@@ -118,109 +113,93 @@ class ExternalListingsService
     public function updateExternalListing(array $data, int $id)
     {
         try {
+            $externalListingQuery = $this->getQueryBuilder("external_listings.properties")->where('id', '=', $id);
+
+            if ($externalListingQuery->where('updated_by_id', '!=', Auth()->user()->id)->exists() && !Auth()->user()->isUpline()) {
+                return formatServiceResponse(false, 'User does not have permission to update this listing.', statusCode: 403);
+            }
+
             $this->getQueryBuilder("external_listings.properties")->where('id', '=', $id)->update($data);
             $updatedExternalListing = $this->getQueryBuilder("external_listings.listings")->where('id', '=', $id)->first();
-            Cache::flush();
             return formatServiceResponse(true, "External Listing Updated Successfully", $updatedExternalListing);
         } catch (Exception $e) {
-            return formatServiceResponse(false, $e->getMessage());
+            return formatServiceResponse(false, $e->getMessage(), statusCode: 500);
         }
     }
 
-    public function deleteExternalListing(int $id)
+    public function deleteExternalListing(int $id, bool $userIsUpline = false)
     {
-        $queryBuilder = $this->getQueryBuilder("external_listings.properties");
-        $record =  $queryBuilder->where('id', '=', $id)->first();
+        $externalListingQuery = $this->getQueryBuilder("external_listings.properties");
+        $recordQuery =  $externalListingQuery->where('id', '=', $id);
 
         // Ensure User deleting is the creator of the resource
-        if ($record->updated_by_id != Auth()->user()->id || Auth()->user()->id != 1) {
-            abort(403, 'Forbidden access.');
+        if ($recordQuery->where('updated_by_id', '!=', Auth()->user()->id)->exists() && !Auth()->user()->isUpline()) {
+            return formatServiceResponse(false, 'User does not have permission to delete this listing.', statusCode: 403);
         }
-        $queryBuilder->delete($id);
-        Cache::flush();
-        return formatServiceResponse(true, "External Listing Deleted Successfully", $record->updated_by_id);
+        $externalListingQuery->delete($id);
+        return formatServiceResponse(true, "External Listing Deleted Successfully", $recordQuery->first()->updated_by_id);
     }
 
     public function sumForWidgets()
     {
-        // Generate a unique cache key 
-        $cacheKey = "sum_for_widgets";
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () {
-            $totalExternalListings = $this->getQueryBuilder()->count();
-            $totalStatesCovered = $this->getQueryBuilder('locations.states')->count();
-            $totalSectorsCovered = $this->getQueryBuilder('public.sectors')->count();
-            $totalListingAgents = $this->getQueryBuilder('stakeholders.listing_agents')->count();
+        $totalExternalListings = $this->getQueryBuilder()->count();
+        $totalStatesCovered = $this->getQueryBuilder('locations.states')->count();
+        $totalSectorsCovered = $this->getQueryBuilder('public.sectors')->count();
+        $totalListingAgents = $this->getQueryBuilder('stakeholders.listing_agents')->count();
 
-            return [
-                "total_external_listings" => $totalExternalListings,
-                "total_states_covered" => $totalStatesCovered,
-                "total_sectors_covered" => $totalSectorsCovered,
-                "total_listing_agents" => $totalListingAgents
-            ];
-        });
+
+        return formatServiceResponse(true, "Sum for Widgets Retrieved Successfully", [
+            "total_external_listings" => $totalExternalListings,
+            "total_states_covered" => $totalStatesCovered,
+            "total_sectors_covered" => $totalSectorsCovered,
+            "total_listing_agents" => $totalListingAgents
+        ], rawResponse: true);
     }
 
     public function visualSet($type = 'sectors')
     {
-        // generate unique cache key
-        $cacheKey = "visual_set:type_{$type}";
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($type) {
-            if ($type === 'top-10-locations') {
-                return $this->getQueryBuilder()
-                    ->select("Location as name", DB::raw('count(*) as value'))
-                    ->where('Location', '!=', null)
-                    ->groupBy('Location')
-                    ->orderBy('value', 'desc')
-                    ->limit(10)
-                    ->get();
-            }
-
+        if ($type === 'top-10-locations') {
             return $this->getQueryBuilder()
-                ->select("Sector as name", DB::raw('count(*) as value'))
-                ->groupBy('Sector')
+                ->select("Location as name", DB::raw('count(*) as value'))
+                ->where('Location', '!=', null)
+                ->groupBy('Location')
+                ->orderBy('value', 'desc')
+                ->limit(10)
                 ->get();
-        });
+        }
+
+        return
+            $this->getQueryBuilder()
+            ->select("Sector as name", DB::raw('count(*) as value'))
+            ->groupBy('Sector')
+            ->get();
     }
 
     public function agentPerformance()
     {
-        $cacheKey = 'agent_performance';
-
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () {
-            return $this->getQueryBuilder('external_listings.listing_agents_ranked')
-                ->select(['id', 'name', 'total_listings as value'])
-                ->limit(10)
-                ->get();
-        });
+        return $this->getQueryBuilder('external_listings.listing_agents_ranked')
+            ->select(['id', 'name', 'total_listings as value'])
+            ->limit(10)
+            ->get();
     }
 
     public function getAllListingAgents()
     {
-        $cacheKey = 'all_listing_agents';
-
-        $data = Cache::remember($cacheKey, now()->addMinutes(10), function () {
-            $tableName = "external_listings.listing_agents_ranked";
-            return $this->getQueryBuilder($tableName)->get();
-        });
-
-        return formatServiceResponse(true, "External Listing Agents Retrieved Successfully", $data);
+        $tableName = "external_listings.listing_agents_ranked";;
+        return formatServiceResponse(true, "External Listing Agents Retrieved Successfully",  $this->getQueryBuilder($tableName)->get());
     }
 
     public function getListingAgentById(int $id, bool $onlyListings = false)
     {
-        $cacheKey = "listing_agents_by_id:id_{$id}:only_listings:{$onlyListings}";
-
-        $data = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id) {
-
-            $tableName = "external_listings.listing_agents_ranked";
-            return  $this->getQueryBuilder($tableName)->where('id', '=', $id)->first();
-        });
+        $tableName = "external_listings.listing_agents_ranked";
+        $data =  $this->getQueryBuilder($tableName)->where('id', '=', $id)->first();
 
         if (!$data) {
-            abort(404, 'External Listing Agent not found');
+            return formatServiceResponse(false, "External Listing Agent not found", $data, statusCode: 404);
         }
+
 
         // Fetch agent's listings
         $listings =  $this->getQueryBuilder('external_listings.summary_listings')
@@ -239,14 +218,13 @@ class ExternalListingsService
         $agent = $queryBuilder->where('id', '=', $id)->first();
 
         if (!$agent) {
-            abort(404, 'External Listing Agent not found');
+            return formatServiceResponse(false, "External Listing Agent not found", $data, statusCode: 404);
         }
 
         $queryBuilder->update($data);
 
         $tableName = "external_listings.listing_agents_ranked";
         $data = $this->getQueryBuilder($tableName)->where('id', '=', $id)->first();
-        Cache::flush();
         return formatServiceResponse(true, "External Listing Agent Updated Successfully", $data);
     }
 }
