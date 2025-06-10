@@ -19,6 +19,6 @@ class ResourceCreationController extends Controller
 
         $result = $this->propertyDataService->createNewResource($resourceName, $data);
 
-        return response()->json($result, $result['success'] ? 201 : 400);
+        return response()->json(...$result);
     }
 }
