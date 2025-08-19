@@ -37,7 +37,7 @@ class StreetDataRequest extends FormRequest
             'contact_numbers' => 'nullable|string|max:250',
             'contact_email' => 'nullable|string|max:250',
             'construction_status' => 'string|nullable',
-            'image_path' => 'required|string',
+            'image_path' => 'nullable|string',
             'geolocation' => 'nullable|string|max:250',
         ];
     }

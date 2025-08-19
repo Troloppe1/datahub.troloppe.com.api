@@ -40,16 +40,30 @@ class StreetDataController extends Controller
     public function store(StreetDataRequest $request)
     {
         $request->validated();
+
         $streetData = new StreetData();
         $streetData->fill($request->safe()->all());
         $streetData->creator_id = Auth::user()->id;
-        $prefix = $this->streetDataService->imagePrefixGenerator($streetData->section_id, $streetData->sector_id);
-        $image_perm_path = $this->imageUploaderService->moveImage($streetData->image_path, "/public/images/street-data/", $prefix);
 
-        if ($image_perm_path) {
-            $streetData->image_path = url($image_perm_path);
+        if ($streetData->image_path) {
+            $prefix = $this->streetDataService->imagePrefixGenerator(
+                $streetData->section_id,
+                $streetData->sector_id
+            );
+
+            $image_perm_path = $this->imageUploaderService->moveImage(
+                $streetData->image_path,
+                "/public/images/street-data/",
+                $prefix
+            );
+
+            if ($image_perm_path) {
+                $streetData->image_path = url($image_perm_path);
+            }
         }
+
         $streetData->save();
+
         return response()->json($streetData, 201);
     }
 
@@ -90,17 +104,17 @@ class StreetDataController extends Controller
             'startDate' => 'nullable|date',
             'endDate' => 'nullable|date',
         ]);
-    
+
         $format = $request->format;
         $startDate = $request->startDate;
         $endDate = $request->endDate;
-    
+
         return $this->excel->download(
-            new StreetDataExport($startDate, $endDate), 
+            new StreetDataExport($startDate, $endDate),
             "street-data." . ($this->exportFormatType[$format] ?? 'xlsx')
         );
     }
-    
+
 
     private $exportFormatType = [
         'excel' => 'xlsx',
