@@ -37,6 +37,11 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
+
+            Route::middleware("api")
+                ->prefix('api/investment-data')
+                ->group(base_path('routes/investment-data.php'));
         });
     }
 }
+// ['api','auth:sanctum', 'user_not_adhoc_staff']

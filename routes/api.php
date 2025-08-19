@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExternalListings\ExternalListingsController;
-use App\Http\Controllers\PropertyData\InitialController;
 use App\Http\Controllers\TmpImageUploadController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationsController;

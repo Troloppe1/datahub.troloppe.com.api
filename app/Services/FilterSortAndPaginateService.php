@@ -24,7 +24,7 @@ class FilterSortAndPaginateService
             $filter = $filterParams['filter'] ?? null;
 
             if ($operator) {
-                $filter1 = $conditions[0]['filter'];
+                $filter1 = $conditions[0]['filter'];    
                 $filter2 = $conditions[1]['filter'];
                 $queryBuilder->where(function ($query) use ($key, $filter1, $filter2, $operator) {
                     $query->where($key, 'ILIKE', $filter1);
