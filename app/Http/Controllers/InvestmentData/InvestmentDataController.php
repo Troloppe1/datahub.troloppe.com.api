@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\InvestmentData;
 
 use App\Http\Controllers\Controller;
-use App\Services\InvestmentDataService;
+use App\Services\InvestmentData\ListingService as InvestmentDataListingService;
 use Illuminate\Http\Request;
 
 class InvestmentDataController extends Controller
 {
-        public function __construct(private readonly InvestmentDataService $investmentDataService) {}
+    public function __construct(private readonly InvestmentDataListingService $investmentDataListingService) {}
 
-        public function paginatedListings(Request $request)
+    public function paginatedListings(Request $request)
     {
         // Retrieves query parameters with defaults if not provided.
         $table = $request->query("table", "residential");
@@ -21,7 +21,7 @@ class InvestmentDataController extends Controller
         $stringifiedAgFilterModel = $request->query("ag_filter_model", null);
 
         return response()->json(
-            ...$this->investmentDataService->getPaginatedData(
+            ...$this->investmentDataListingService->getPaginatedData(
                 $table,
                 $limit,
                 $page,
@@ -30,5 +30,14 @@ class InvestmentDataController extends Controller
                 $sort_by,
             )
         );
+    }
+
+    public function show(string $id)
+    {
+        $view = filter_var(request()->query('view'), FILTER_VALIDATE_BOOLEAN);
+        $sector = request()->query('sector', 'residential');
+        return response()->json(...$this
+            ->investmentDataListingService
+            ->getInvestmentDataListingById($id, $view, $sector));
     }
 }
