@@ -2,6 +2,7 @@
 
 namespace App\Services\InvestmentData;
 
+use App\Exceptions\HttpException;
 use App\Services\FilterSortAndPaginateService;
 use Illuminate\Database\Query\Builder;
 use App\QueryBuilders\PostgresDatahubDbBuilder;
@@ -28,6 +29,15 @@ class ListingService
         $schema = "investment_data";
         $table = "$schema.$table" . "_properties_without_amenities";
         return $this->postgresDatahubDbBuilder->createQueryBuilder($table);
+    }
+
+    private function getAmenitiesQueryBuilder(): Builder
+    {
+        return $this->postgresDatahubDbBuilder
+            ->createQueryBuilder("investment_data.property_amenities_with_sub_amenities")
+            ->join('amenities.amenities', 'property_amenities_with_sub_amenities.amenity_id', '=', 'amenities.id')
+            ->join('amenities.sub_amenities', 'property_amenities_with_sub_amenities.sub_amenity_id', '=', 'sub_amenities.id', 'left')
+            ->select('property_amenities_with_sub_amenities.*', 'amenities.name as amenity_name', 'sub_amenities.name as sub_amenity_name');
     }
 
     /**
@@ -83,7 +93,6 @@ class ListingService
         });
 
         return formatServiceResponse(
-            true,
             "Investment data ($table) Retrieved Successfully (cached)",
             $data,
             rawResponse: true,
@@ -99,9 +108,56 @@ class ListingService
         $data =  $this->getQueryBuilder($sector)->where('property ID', '=', $id)->first();
 
         if (!$data) {
-            return formatServiceResponse(false, 'Investment Data not found', null, 404);
+            throw new HttpException('Investment Data not found', 404);
         }
 
-        return formatServiceResponse(true, "Investment Data Retrieved Successfully", $data);
+        // get previous property id
+        $previousPropertyId = $this->getQueryBuilder($sector)
+            ->where('property ID', '<', $id)
+            ->orderByDesc('property ID')
+            ->value('property ID');
+
+        // get next property id
+        $nextPropertyId = $this->getQueryBuilder($sector)
+            ->where('property ID', '>', $id)
+            ->orderBy('property ID')
+            ->value('property ID');
+        
+        $dataWithMeta = [
+            'property' => $data,
+            "meta" => [
+                'previous_property_id' => $previousPropertyId,
+                'next_property_id' => $nextPropertyId,
+            ],
+        ];
+    
+        return formatServiceResponse("Investment Data Retrieved Successfully", $dataWithMeta);
+    }
+
+    public function getPropertyAmenitiesById(int $id)
+    {
+        $data = $this->getAmenitiesQueryBuilder()
+            ->where('property_id', $id)
+            ->get();
+
+        $newData = $data
+            ->groupBy('amenity_name')
+            ->map(function ($items, $amenity) {
+                return [
+                    'amenity_name' => $amenity,
+                    'sub_amenities' => $items
+                        ->pluck('sub_amenity_name')
+                        ->filter()
+                        ->values()
+                        ->join(', '),
+                ];
+            })
+            ->values()
+            ->all();
+
+        logger()->info("Amenities for property ID $id: " . json_encode($data
+            ->groupBy('amenity_name')));
+
+        return formatServiceResponse("Amenities Retrieved Successfully", $newData);
     }
 }

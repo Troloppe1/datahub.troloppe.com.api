@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\HttpException;
 use App\QueryBuilders\PostgresDatahubDbBuilder;
 use Exception;
 use Illuminate\Database\Connection;
@@ -218,11 +219,11 @@ class PropertyDataService
 
             $builder->insert($values);
             $newResource = $builder->select(['id', 'name'])->where('name', '=', $values['name'])->first();
-            return formatServiceResponse(true, $statusMessages['success'], [$resourceName => $newResource]);
+            return formatServiceResponse($statusMessages['success'], [$resourceName => $newResource]);
         } catch (Exception $e) {
             // Unique Constraint violation for Postgres
             if ($e->getCode() == 23505) {
-                return formatServiceResponse(false, $statusMessages['error']);
+                throw new HttpException($statusMessages['error'], 400);
             }
             throw $e;
         }

@@ -36,8 +36,15 @@ class InvestmentDataController extends Controller
     {
         $view = filter_var(request()->query('view'), FILTER_VALIDATE_BOOLEAN);
         $sector = request()->query('sector', 'residential');
-        return response()->json(...$this
+        return apiResponse($this
             ->investmentDataListingService
             ->getInvestmentDataListingById($id, $view, $sector));
+    }
+   
+    public function showPropertyAmenities(string $propertyId)
+    {
+        return apiResponse($this
+            ->investmentDataListingService
+            ->getPropertyAmenitiesById((int)$propertyId));
     }
 }

@@ -15,10 +15,7 @@ class ResourceCreationController extends Controller
     {
         $data = $request->validated();
         $resourceName = $request->query('resource_name');
-
-
         $result = $this->propertyDataService->createNewResource($resourceName, $data);
-
-        return response()->json(...$result);
+        return apiResponse($result);
     }
 }

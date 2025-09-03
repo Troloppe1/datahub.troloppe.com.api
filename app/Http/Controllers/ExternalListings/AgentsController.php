@@ -12,14 +12,14 @@ class AgentsController extends Controller
 
     public function index()
     {
-        return response()->json(...$this->externalListingsService->getAllListingAgents());
+        return apiResponse($this->externalListingsService->getAllListingAgents());
     }
 
     // Returns agent with listings
     public function show(string $id, Request $request)
     {
         $onlyListing = filter_var($request->query('only_listings'), FILTER_VALIDATE_BOOLEAN);
-        return response()->json(...$this->externalListingsService->getListingAgentById(+$id, $onlyListing));
+        return apiResponse($this->externalListingsService->getListingAgentById(+$id, $onlyListing));
     }
 
     public function update(string $id, Request $request)
@@ -33,6 +33,6 @@ class AgentsController extends Controller
             'website' => 'nullable|string',
             'note' => 'nullable|string',
         ]);
-        return response()->json(...$this->externalListingsService->updateListingAgent(+$id, $data));
+        return apiResponse($this->externalListingsService->updateListingAgent(+$id, $data));
     }
 }

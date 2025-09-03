@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Exceptions\HttpException;
 use App\QueryBuilders\PostgresDatahubDbBuilder;
 use Exception;
 use \Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;;
 
 class ExternalListingsService
 {
@@ -72,7 +75,6 @@ class ExternalListingsService
         }
 
         return formatServiceResponse(
-            true,
             "External Listings Retrieved Successfully",
             $this->filterSortAndPaginateService->getPaginatedData($queryBuilder, $limit, $page),
             rawResponse: true,
@@ -94,19 +96,19 @@ class ExternalListingsService
 
 
         if (!$data) {
-            return formatServiceResponse(false, 'External Listing not found', null, 404);
+            throw new HttpException('External Listing not found', 404);
         }
 
-        return formatServiceResponse(true, "External Listing Retrieved Successfully", $data);
+        return formatServiceResponse("External Listing Retrieved Successfully", $data);
     }
     public function storeExternalListing(array $data)
     {
         try {
             $this->getQueryBuilder("external_listings.properties")->insert($data);
             $newExternalListing = $this->getQueryBuilder("external_listings.listings")->orderBy('id', 'desc')->first();
-            return formatServiceResponse(true, "External Listing Created Successfully", $newExternalListing);
+            return formatServiceResponse("External Listing Created Successfully", $newExternalListing);
         } catch (Exception $e) {
-            return formatServiceResponse(false, $e->getMessage());
+            throw new HttpException($e->getMessage());
         }
     }
 
@@ -116,14 +118,14 @@ class ExternalListingsService
             $externalListingQuery = $this->getQueryBuilder("external_listings.properties")->where('id', '=', $id);
 
             if ($externalListingQuery->where('updated_by_id', '!=', Auth()->user()->id)->exists() && !Auth()->user()->isUpline()) {
-                return formatServiceResponse(false, 'User does not have permission to update this listing.', statusCode: 403);
+                throw new HttpException("User does not have permission to update this listing.", 403);
             }
 
             $this->getQueryBuilder("external_listings.properties")->where('id', '=', $id)->update($data);
             $updatedExternalListing = $this->getQueryBuilder("external_listings.listings")->where('id', '=', $id)->first();
-            return formatServiceResponse(true, "External Listing Updated Successfully", $updatedExternalListing);
+            return formatServiceResponse("External Listing Updated Successfully", $updatedExternalListing);
         } catch (Exception $e) {
-            return formatServiceResponse(false, $e->getMessage(), statusCode: 500);
+            throw new HttpException($e->getMessage());
         }
     }
 
@@ -134,10 +136,10 @@ class ExternalListingsService
 
         // Ensure User deleting is the creator of the resource
         if ($recordQuery->where('updated_by_id', '!=', Auth()->user()->id)->exists() && !Auth()->user()->isUpline()) {
-            return formatServiceResponse(false, 'User does not have permission to delete this listing.', statusCode: 403);
+            throw new HttpException('User does not have permission to delete this listing.', 403);
         }
         $externalListingQuery->delete($id);
-        return formatServiceResponse(true, "External Listing Deleted Successfully", $recordQuery->first()->updated_by_id);
+        return formatServiceResponse("External Listing Deleted Successfully", $recordQuery->first()->updated_by_id);
     }
 
     public function sumForWidgets()
@@ -149,7 +151,7 @@ class ExternalListingsService
         $totalListingAgents = $this->getQueryBuilder('stakeholders.listing_agents')->count();
 
 
-        return formatServiceResponse(true, "Sum for Widgets Retrieved Successfully", [
+        return formatServiceResponse("Sum for Widgets Retrieved Successfully", [
             "total_external_listings" => $totalExternalListings,
             "total_states_covered" => $totalStatesCovered,
             "total_sectors_covered" => $totalSectorsCovered,
@@ -188,7 +190,7 @@ class ExternalListingsService
     public function getAllListingAgents()
     {
         $tableName = "external_listings.listing_agents_ranked";;
-        return formatServiceResponse(true, "External Listing Agents Retrieved Successfully",  $this->getQueryBuilder($tableName)->get());
+        return formatServiceResponse("External Listing Agents Retrieved Successfully",  $this->getQueryBuilder($tableName)->get());
     }
 
     public function getListingAgentById(int $id, bool $onlyListings = false)
@@ -197,7 +199,7 @@ class ExternalListingsService
         $data =  $this->getQueryBuilder($tableName)->where('id', '=', $id)->first();
 
         if (!$data) {
-            return formatServiceResponse(false, "External Listing Agent not found", $data, statusCode: 404);
+            throw new HttpException('External Listing Agent not found', 404);
         }
 
 
@@ -208,7 +210,7 @@ class ExternalListingsService
 
         $onlyListings ? $data = $listings : $data->listings = $listings;
 
-        return formatServiceResponse(true, "External Listing Agent Retrieved Successfully", $data);
+        return formatServiceResponse("External Listing Agent Retrieved Successfully", $data);
     }
 
     public function updateListingAgent(int $id, array $data)
@@ -218,13 +220,13 @@ class ExternalListingsService
         $agent = $queryBuilder->where('id', '=', $id)->first();
 
         if (!$agent) {
-            return formatServiceResponse(false, "External Listing Agent not found", $data, statusCode: 404);
+            throw new HttpException('External Listing Agent not found', 404);
         }
 
         $queryBuilder->update($data);
 
         $tableName = "external_listings.listing_agents_ranked";
         $data = $this->getQueryBuilder($tableName)->where('id', '=', $id)->first();
-        return formatServiceResponse(true, "External Listing Agent Updated Successfully", $data);
+        return formatServiceResponse("External Listing Agent Updated Successfully", $data);
     }
 }

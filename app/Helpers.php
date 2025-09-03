@@ -36,10 +36,9 @@ function titleCase($str)
 
 
 function formatServiceResponse(
-    bool $success,
     string $message,
     mixed $payload = null,
-    ?int $statusCode = null,
+    int $statusCode = 200,
     bool $rawResponse = false
 ): array {
 
@@ -49,10 +48,10 @@ function formatServiceResponse(
 
     $response = [
         'data' => [
-            'success' => $success,
+            'success' => true,
             'message' => $message,
         ],
-        'status' => $statusCode ?? ($success ? 200 : 400),
+        'status' => $statusCode,
     ];
 
     if ($payload !== null) {
@@ -60,5 +59,10 @@ function formatServiceResponse(
     }
 
     return $response;
+}
+
+function apiResponse(array $serviceResponse)
+{
+    return response()->json(...$serviceResponse);
 }
 

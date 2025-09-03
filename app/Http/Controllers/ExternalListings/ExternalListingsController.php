@@ -38,24 +38,24 @@ class ExternalListingsController extends Controller
     public function show(string $id)
     {
         $view = filter_var(request()->query('view'), FILTER_VALIDATE_BOOLEAN);
-        return response()->json(...$this->externalListingsService->getExternalListingById($id, $view));
+        return apiResponse($this->externalListingsService->getExternalListingById($id, $view));
     }
 
     public function store(ExternalListingRequest $request)
     {
         $data = $request->validated();
-        return response()->json(...$this->externalListingsService->storeExternalListing($data));
+        return apiResponse($this->externalListingsService->storeExternalListing($data));
     }
    
     public function update(ExternalListingRequest $request, string $id)
     {
         $data = $request->validated();
-        return response()->json(...$this->externalListingsService->updateExternalListing($data, $id));
+        return apiResponse($this->externalListingsService->updateExternalListing($data, $id));
     }
 
     public function destroy(string $id)
     {
-        return response()->json(...$this->externalListingsService->deleteExternalListing($id));
+        return apiResponse($this->externalListingsService->deleteExternalListing($id));
     }
 
     public function export(Request $request)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\HttpException;
 use App\Http\Resources\NotificationResource;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,7 +34,7 @@ class NotificationsController extends Controller
             $notification->markAsRead();
             return new NotificationResource($notification);
         }
-        abort(404);
+        throw new HttpException('Notification not found', 404);
     }
 
     /**
