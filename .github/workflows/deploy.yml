@@ -47,7 +47,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           source: ".env"
-          target: ${{ secrets.SERVER_PATH }}/.env
+          target: ${{ secrets.SERVER_PATH }}/
 
 
       - name: Run deployment commands on server
