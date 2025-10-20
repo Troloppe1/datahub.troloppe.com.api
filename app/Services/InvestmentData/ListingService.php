@@ -106,6 +106,11 @@ class ListingService
          * @var array
          */
         $data =  $this->getQueryBuilder($sector)->where('property ID', '=', $id)->first();
+        $secondayData = $this->getQueryBuilder($sector, false)
+            ->where('id', '=', $id)
+            ->first();
+
+        $data = array_merge((array)$data, (array)$secondayData);
 
         if (!$data) {
             throw new HttpException('Investment Data not found', 404);
