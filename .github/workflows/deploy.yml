@@ -35,7 +35,7 @@ jobs:
 
       - name: Install Doppler CLI
         run: |
-          curl -Ls https://cli.doppler.com/install.sh | sh 
+          curl -Ls https://cli.doppler.com/install.sh | sudo sh 
 
       - name: Create .env file using Doppler
         env:
