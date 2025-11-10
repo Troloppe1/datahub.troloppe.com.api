@@ -33,11 +33,19 @@ jobs:
           source: "."
           target: ${{ secrets.SERVER_PATH }}
 
-
-      - name: Create .env file
+      - name: Install Doppler CLI
         run: |
-          echo "${{ secrets.LARAVEL_ENV }}" > .env
+          curl -Ls https://cli.doppler.com/install.sh | sh 
 
+      - name: Create .env file using Doppler
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: |
+          doppler secrets download --no-file --format env > .env
+
+      # - name: Create .env file
+      #   run: |
+      #     echo "${{ secrets.LARAVEL_ENV }}" > .env
 
       - name: Copy .env file to server
         uses: appleboy/scp-action@master
