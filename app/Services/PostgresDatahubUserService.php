@@ -30,6 +30,11 @@ class PostgresDatahubUserService
         $this->getQueryBuilder()->delete(['id' => $userId]);
     }
 
+    public function softDeleteUser(int $userId): void
+    {
+        $this->getQueryBuilder()->where('id', $userId)->update(['deleted_at' => now()]);
+    }
+
     private function processUserData(User $user){
         return [
             'id' => $user->id,
