@@ -24,10 +24,10 @@ class ListingService
      *
      * @return Builder Query builder instance.
      */
-    private function getQueryBuilder(string $table = "residential"): Builder
+    private function getQueryBuilder(string $table = "residential", bool $view = true): Builder
     {
         $schema = "investment_data";
-        $table = "$schema.$table" . "_properties_without_amenities";
+        $table = $view ?  "$schema.$table" . "_properties_without_amenities" : "$schema." . "properties";
         return $this->postgresDatahubDbBuilder->createQueryBuilder($table);
     }
 
@@ -110,7 +110,7 @@ class ListingService
             ->where('id', '=', $id)
             ->first();
 
-        $data = array_merge((array)$data, (array)$secondayData);
+        $data = array_merge((array)$data,["source_data" => (array)$secondayData]);
 
         if (!$data) {
             throw new HttpException('Investment Data not found', 404);
