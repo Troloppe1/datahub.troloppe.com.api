@@ -116,7 +116,7 @@ class ListingService
             throw new HttpException('Investment Data not found', 404);
         }
 
-        // get previous property id
+        //get previous property id
         $previousPropertyId = $this->getQueryBuilder($sector)
             ->where('property ID', '<', $id)
             ->orderByDesc('property ID')
