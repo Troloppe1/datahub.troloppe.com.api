@@ -19,5 +19,5 @@ use Illuminate\Validation\UnauthorizedException;
 Route::redirect('/', '/routes');
 Route::get('/routes', [RouteController::class, 'index'])->name('api-routes');
 Route::get('/unauthorized', function () {
-    return response('Unauthorized', 401);
+    return response('Unauthorized...', 401);
 })->name('login');
