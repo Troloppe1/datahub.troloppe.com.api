@@ -67,6 +67,11 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             cd ${{ secrets.SERVER_PATH }}
+
+            sudo chown -R $USER:www-data .
+            sudo find . -type f -exec chmod 0644 {} \;
+            sudo find . -type d -exec chmod 2775 {} \;
+
             composer install --no-dev --optimize-autoloader
             php artisan config:cache
             php artisan route:cache
