@@ -129,19 +129,34 @@ class ExternalListingsService
         }
     }
 
-    public function deleteExternalListing(int $id, bool $userIsUpline = false)
+    public function deleteExternalListing(int $id)
     {
-        $externalListingQuery = $this->getQueryBuilder("external_listings.properties");
-        $recordQuery =  $externalListingQuery->where('id', '=', $id);
+        $user = auth()->user();
 
-        // Ensure User deleting is the creator of the resource
-        if ($recordQuery->where('updated_by_id', '!=', Auth()->user()->id)->exists() && !Auth()->user()->isUpline()) {
-            throw new HttpException('User does not have permission to delete this listing.', 403);
+        $record = $this->getQueryBuilder("external_listings.properties")
+            ->where('id', $id)
+            ->first();
+
+        if (!$record) {
+            throw new HttpException(404, 'External listing not found.');
         }
-        $updatedById = $recordQuery->first()->updated_by_id;
-        $externalListingQuery->delete($id);
-        return formatServiceResponse("External Listing Deleted Successfully", $updatedById);
+
+        // Permission check
+        if ($record->updated_by_id !== $user->id && !$user->isUpline()) {
+            throw new HttpException(403, 'User does not have permission to delete this listing.');
+        }
+
+        // Delete
+        $this->getQueryBuilder("external_listings.properties")
+            ->where('id', $id)
+            ->delete();
+
+        return formatServiceResponse(
+            "External Listing Deleted Successfully",
+            $record->updated_by_id
+        );
     }
+
 
     public function sumForWidgets()
     {
