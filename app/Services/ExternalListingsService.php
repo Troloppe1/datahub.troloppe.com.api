@@ -138,8 +138,9 @@ class ExternalListingsService
         if ($recordQuery->where('updated_by_id', '!=', Auth()->user()->id)->exists() && !Auth()->user()->isUpline()) {
             throw new HttpException('User does not have permission to delete this listing.', 403);
         }
+        $updatedById = $recordQuery->first()->updated_by_id;
         $externalListingQuery->delete($id);
-        return formatServiceResponse("External Listing Deleted Successfully", $recordQuery->first()->updated_by_id);
+        return formatServiceResponse("External Listing Deleted Successfully", $updatedById);
     }
 
     public function sumForWidgets()
