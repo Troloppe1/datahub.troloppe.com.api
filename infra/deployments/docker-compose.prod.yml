@@ -18,7 +18,7 @@ services:
   datahub-api:
     build:
       context: ../../
-      dockerfile: DockerFile
+      dockerfile: infra/DockerFile
     container_name: datahub-api
     env_file: .env
     restart: unless-stopped

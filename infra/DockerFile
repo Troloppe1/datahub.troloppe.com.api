@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install -y \
 
 # Configure Nginx
 RUN rm /etc/nginx/sites-enabled/default
-COPY nginx.conf /etc/nginx/sites-enabled/default
+COPY ./infra/nginx.conf /etc/nginx/sites-enabled/default
 
 # Install Composer
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
@@ -64,8 +64,8 @@ RUN echo "max_file_uploads=100" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "max_execution_time=600" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # Copy supervisord conf into docker
-COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY ./start-container /usr/local/bin/start-container
+COPY ./infra/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./infra/start-container /usr/local/bin/start-container
 RUN chmod +x /usr/local/bin/start-container
 
 # Expose HTTP port
