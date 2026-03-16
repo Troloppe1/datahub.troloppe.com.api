@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -e
+
+php artisan optimize:clear
+
+# Start Supervisor (main process)
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
