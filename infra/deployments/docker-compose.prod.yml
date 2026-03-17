@@ -1,0 +1,37 @@
+services:
+  redis:
+    image: redis:7.2.5-alpine
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - datahub
+    volumes:
+      - redis-data:/data
+    command: sh -c "redis-server --appendonly yes --requirepass $$REDIS_PASSWORD"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  app:
+    build:
+      context: ../../
+      dockerfile: infra/DockerFile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    networks:
+      - datahub
+
+networks:
+  datahub:
+
+volumes:
+  redis-data:

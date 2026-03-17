@@ -1,0 +1,80 @@
+FROM php:8.2.29-fpm
+
+# Install system dependencies
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    supervisor \
+    nginx \
+    git \
+    zip \
+    unzip \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    libicu-dev \
+    libonig-dev \
+    libxml2-dev \
+    libpq-dev \
+    curl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_mysql \
+        pdo_pgsql \
+        gd \
+        zip \
+        opcache \
+        bcmath \
+        calendar \
+        exif \
+        gettext \
+        pcntl \
+        shmop \
+        sockets \
+        sysvmsg \
+        sysvsem \
+        sysvshm \
+        intl \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/pear
+
+# Configure Nginx
+RUN rm /etc/nginx/sites-enabled/default
+COPY ./infra/nginx.conf /etc/nginx/sites-enabled/default
+
+# Install Composer
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && php -r "unlink('composer-setup.php');"
+
+WORKDIR /var/www/html
+
+COPY . /var/www/html/
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Set correct permissions
+RUN chgrp -R www-data storage bootstrap/cache && \
+    chmod -R ug+rwx storage bootstrap/cache
+
+# PHP upload settings
+RUN echo "max_file_uploads=100" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size=5G" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "upload_max_filesize=5G" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "file_uploads=On" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit=500M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_execution_time=600" >> /usr/local/etc/php/conf.d/uploads.ini
+
+# Copy supervisord conf into docker
+COPY ./infra/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./infra/start-container /usr/local/bin/start-container
+RUN chmod +x /usr/local/bin/start-container
+
+# Expose HTTP port
+EXPOSE 80
+
+# Start Nginx + PHP-FPM via supervisord
+ENTRYPOINT ["start-container"]

@@ -50,8 +50,10 @@ class ImageUploaderService
      * @param string $diskName
      * @return bool
      */
-    public function deleteImage(string $imageUrl, string $diskName = ImageUploaderFacade::TMP_DISK_NAME): bool
+    public function deleteImage(?string $imageUrl, string $diskName = ImageUploaderFacade::TMP_DISK_NAME): bool
     {
+        if (!$imageUrl) return false;
+
         $storedImageBasename = basename($imageUrl);
         if (Storage::disk($diskName)->exists($storedImageBasename)) {
             return Storage::disk($diskName)->delete($storedImageBasename);

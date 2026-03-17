@@ -14,15 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/Checkout@v3
 
-
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: "8.2"
           extensions: mbstring, bcmath, intl, mysql
           coverage: none
 
-  
       - name: Copy project files to server
         uses: appleboy/scp-action@master
         with:
@@ -35,7 +33,7 @@ jobs:
 
       - name: Install Doppler CLI
         run: |
-          curl -Ls https://cli.doppler.com/install.sh | sudo sh 
+          curl -Ls https://cli.doppler.com/install.sh | sudo sh
 
       - name: Create .env file using Doppler
         env:
@@ -57,7 +55,6 @@ jobs:
           source: ".env"
           target: ${{ secrets.SERVER_PATH }}/
 
-
       - name: Run deployment commands on server
         uses: appleboy/ssh-action@master
         with:
@@ -67,10 +64,28 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             cd ${{ secrets.SERVER_PATH }}
+
+            sudo chown -R $USER:www-data .
+            sudo chmod -R 775 storage
+            sudo chmod -R 775 bootstrap/cache
+
+            echo "💡 Create storage symlink"
+            php artisan storage:link || true
+
+            echo "💡 Ensure storage & cache directories exist"
+            mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
+
+            echo "💡 Install PHP dependencies"
             composer install --no-dev --optimize-autoloader
+
+            echo "💡 Clear & cache Laravel configuration"
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
             php artisan optimize
+
+            echo "💡 Restart Laravel queue"
             php artisan queue:restart
+
+            echo "💡 Run migrations"
             php artisan migrate --force
