@@ -18,6 +18,8 @@ services:
     build:
       context: ../../
       dockerfile: infra/DockerFile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file: .env
     restart: unless-stopped
     depends_on:
