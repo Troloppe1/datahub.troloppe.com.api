@@ -82,6 +82,25 @@ class ImageUploaderService
         return false;
     }
 
+    public function moveImageToHetznerStorage(
+        string $imageUrl,
+        string $pathPrefix
+    ): bool|string {
+        $tempStoragePath = $this->getStoragePath($imageUrl);
+        if (Storage::exists($tempStoragePath)) {
+            $basename = basename($tempStoragePath);
+            $imagePath = "/{$pathPrefix}-{$basename}";
+            Storage::disk('s3')->put(
+                config('filesystems.disks.s3.base_path') . $imagePath,
+                file_get_contents($tempStoragePath)
+            );
+
+            unlink($tempStoragePath);
+            return $imagePath;
+        }
+        return false;
+    }
+
     private function getStoragePath(string $imageUrl): string
     {
         $imagePath = parse_url($imageUrl, PHP_URL_PATH);
