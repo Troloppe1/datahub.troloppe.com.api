@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class StreetDataResource extends JsonResource
 {
@@ -26,7 +27,7 @@ class StreetDataResource extends JsonResource
             'sector_id' => $this->sector->id,
             'sub_sector' => $this->subSector?->name,
             'sub_sector_id' => $this->subSector?->id,
-            'image_path' => $this->image_path,
+            'image_path' => $this->s3ImagePath($this->image_path),
             'is_verified' => $this->is_verified,
             'created_at' => $this->created_at,
             'creator' => str($this->creator->name)->title(),
@@ -47,5 +48,12 @@ class StreetDataResource extends JsonResource
         $resource['geolocation'] = $this->geolocation;
 
         return $resource;
+    }
+
+    private function s3ImagePath(?string $imagePath = null)
+    {
+        if (is_null($imagePath)) return null;
+
+        return Storage::url(config('filesystems.disks.s3.base_path') . $this->image_path);
     }
 }
