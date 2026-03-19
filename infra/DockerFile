@@ -1,8 +1,11 @@
 FROM php:8.2.29-fpm
 
+USER root
+
 # Install system dependencies
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    vim \
     supervisor \
     nginx \
     git \
@@ -58,14 +61,15 @@ RUN composer install --no-dev --optimize-autoloader
 
 # Ensure required directories exist
 RUN mkdir -p storage/app/public/tmp \
+    storage/logs \
     storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
     bootstrap/cache
 
 # Set correct permissions
-RUN chgrp -R www-data storage bootstrap/cache && \
-    chmod -R ug+rwx storage bootstrap/cache
+RUN chown -R www-data:www-data storage bootstrap/cache && \
+    chmod -R 775 storage bootstrap/cache
 
 # PHP upload settings
 RUN echo "max_file_uploads=100" >> /usr/local/etc/php/conf.d/uploads.ini \

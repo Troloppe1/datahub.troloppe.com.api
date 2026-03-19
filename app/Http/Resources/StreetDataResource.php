@@ -54,6 +54,6 @@ class StreetDataResource extends JsonResource
     {
         if (is_null($imagePath)) return null;
 
-        return Storage::url(config('filesystems.disks.s3.base_path') . $this->image_path);
+        return Storage::url('/' . config('filesystems.disks.s3.base_path') . $this->image_path);
     }
 }

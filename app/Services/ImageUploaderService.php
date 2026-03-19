@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Facades\ImageUploaderFacade;
+use Exception;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -81,24 +83,49 @@ class ImageUploaderService
         }
         return false;
     }
-
     public function moveImageToHetznerStorage(
-        string $imageUrl,
+        ?string $imageUrl,
         string $pathPrefix
-    ): bool|string {
-        $tempStoragePath = $this->getStoragePath($imageUrl);
-        if (Storage::exists($tempStoragePath)) {
-            $basename = basename($tempStoragePath);
-            $imagePath = "/{$pathPrefix}-{$basename}";
-            Storage::disk('s3')->put(
-                config('filesystems.disks.s3.base_path') . $imagePath,
-                file_get_contents($tempStoragePath)
-            );
-
-            unlink($tempStoragePath);
-            return $imagePath;
+    ): ?string {
+        if (!$imageUrl) {
+            return null;
         }
-        return false;
+
+        $tempStoragePath = $this->getStoragePath($imageUrl);
+
+        if (!Storage::disk('local')->exists($tempStoragePath)) {
+            throw new \Exception("File not found in local storage: {$tempStoragePath}");
+        }
+
+        $fullPath = storage_path("app/{$tempStoragePath}");
+
+        if (!file_exists($fullPath)) {
+            throw new \Exception("File does not exist on disk: {$fullPath}");
+        }
+
+        $basename = basename($tempStoragePath);
+        $imagePath = "{$pathPrefix}-{$basename}";
+
+        $stream = fopen($fullPath, 'r');
+
+        if (!$stream) {
+            throw new \Exception("Failed to open file stream: {$fullPath}");
+        }
+
+        $uploaded = Storage::disk('s3')->put(
+            config('filesystems.disks.s3.base_path') . '/' . $imagePath,
+            $stream
+        );
+
+        if (!$uploaded) {
+            throw new \Exception("Failed to upload file to S3: {$imagePath}");
+        }
+
+        fclose($stream);
+
+        Storage::disk('local')->delete($tempStoragePath);
+
+        return $imagePath;
     }
 
     private function getStoragePath(string $imageUrl): string

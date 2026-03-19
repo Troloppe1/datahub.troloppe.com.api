@@ -67,7 +67,7 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'throw' => false,
+            'throw' => true,
             // custom base path for uploads
             'base_path' => env('AWS_BASE_PATH', ''),
         ],
@@ -87,7 +87,7 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
-        public_path('storage/images/street-data') => storage_path('app/public/images/street-data'),
+        // public_path('storage/images/street-data') => storage_path('app/public/images/street-data'),
     ],
 
 ];
