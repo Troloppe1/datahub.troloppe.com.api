@@ -2,6 +2,7 @@
 set -e
 
 php artisan optimize:clear
+php artisan storage:link || true
 
 # Start Supervisor (main process)
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

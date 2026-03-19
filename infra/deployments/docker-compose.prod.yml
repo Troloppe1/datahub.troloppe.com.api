@@ -29,9 +29,12 @@ services:
       - "3000:80"
     networks:
       - datahub
+    volumes:
+      - storage_tmp:/var/www/html/storage/app/tmp
 
 networks:
   datahub:
 
 volumes:
   redis-data:
+  storage_tmp:

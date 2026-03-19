@@ -56,6 +56,13 @@ COPY . /var/www/html/
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
+# Ensure required directories exist
+RUN mkdir -p storage/app/public/tmp \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    bootstrap/cache
+
 # Set correct permissions
 RUN chgrp -R www-data storage bootstrap/cache && \
     chmod -R ug+rwx storage bootstrap/cache
