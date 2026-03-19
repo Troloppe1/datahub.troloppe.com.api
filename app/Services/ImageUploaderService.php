@@ -64,25 +64,25 @@ class ImageUploaderService
         return false;
     }
 
-    /**
-     * Moves image from temp store to destination directory and returns
-     * public url of new location
-     *
-     * @param string $imageUrl
-     * @param string $destinationDir
-     * @return bool | string
-     */
-    public function moveImage(string $imageUrl, string $destinationDir, string $prefix = ''): bool|string
-    {
-        $tempStoragePath = $this->getStoragePath($imageUrl);
-        if (Storage::exists($tempStoragePath)) {
-            $basename = basename($tempStoragePath);
-            $destStoragePath = "{$destinationDir}/{$prefix}-{$basename}";
-            Storage::move($tempStoragePath, $destStoragePath);
-            return preg_replace('/^\/public/', '/storage', $destStoragePath);
-        }
-        return false;
-    }
+    // /**
+    //  * Moves image from temp store to destination directory and returns
+    //  * public url of new location
+    //  *
+    //  * @param string $imageUrl
+    //  * @param string $destinationDir
+    //  * @return bool | string
+    //  */
+    // public function moveImage(string $imageUrl, string $destinationDir, string $prefix = ''): bool|string
+    // {
+    //     $tempStoragePath = $this->getStoragePath($imageUrl);
+    //     if (Storage::exists($tempStoragePath)) {
+    //         $basename = basename($tempStoragePath);
+    //         $destStoragePath = "{$destinationDir}/{$prefix}-{$basename}";
+    //         Storage::move($tempStoragePath, $destStoragePath);
+    //         return preg_replace('/^\/public/', '/storage', $destStoragePath);
+    //     }
+    //     return false;
+    // }
     public function moveImageToHetznerStorage(
         ?string $imageUrl,
         string $pathPrefix
@@ -131,6 +131,6 @@ class ImageUploaderService
     private function getStoragePath(string $imageUrl): string
     {
         $imagePath = parse_url($imageUrl, PHP_URL_PATH);
-        return preg_replace('/^\/storage/', '/public', $imagePath);
+        return preg_replace('/^\/storage/', '/public', str_replace(' ', '_', $imagePath));
     }
 }

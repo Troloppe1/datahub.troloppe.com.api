@@ -12,6 +12,7 @@ use App\Services\StreetDataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Excel;
 
 
@@ -98,6 +99,10 @@ class StreetDataController extends Controller
     public function destroy(StreetData $streetDatum)
     {
         Gate::authorize('delete', $streetDatum);
+        if ($streetDatum->image_path) {
+            $imageFullPath =  config('filesystems.disks.s3.base_path') . $streetDatum->image_path;
+            Storage::disk('s3')->delete($imageFullPath);
+        }
         $streetDatum->delete();
         return response()->json([], 204);
     }
