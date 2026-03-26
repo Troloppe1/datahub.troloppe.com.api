@@ -1,8 +1,35 @@
 #!/usr/bin/env bash
 set -e
 
-php artisan optimize:clear
-php artisan storage:link || true
+SERVICE="$1"
 
-# Start Supervisor (main process)
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+# Clear caches if needed
+php artisan optimize:clear || echo "Optimize clear skipped"
+
+case "$SERVICE" in
+    app)
+        echo "[Entrypoint] Starting Laravel PHP-FPM..."
+        exec php-fpm
+        ;;
+    scheduler)
+        echo "[Entrypoint] Starting Laravel Scheduler..."
+        exec php artisan schedule:work 
+        ;;
+    queue)
+        echo "[Entrypoint] Starting Laravel Queue Worker..."
+        php artisan queue:restart || echo "Queue restart skipped"
+        exec php artisan queue:work --timeout=1800 --tries=2 --sleep=3
+        ;;
+    migrate)
+        echo "[Entrypoint] Running migrations..."
+        exec php artisan migrate --force --no-interaction
+        ;;
+    optimize)
+        echo "[Entrypoint] Run optimization..."
+        exec php artisan optimize || echo "Optimize clear skipped"
+        ;;
+    *)
+        echo "[Entrypoint] Unknown service: $SERVICE"
+        exit 1
+        ;;
+esac

@@ -7,7 +7,6 @@ USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
     vim \
     supervisor \
-    nginx \
     git \
     zip \
     unzip \
@@ -43,10 +42,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/pear
 
-# Configure Nginx
-RUN rm /etc/nginx/sites-enabled/default
-COPY ./infra/nginx.conf /etc/nginx/sites-enabled/default
-
 # Install Composer
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
@@ -56,9 +51,6 @@ WORKDIR /var/www/html
 
 COPY . /var/www/html/
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
-
 # Ensure required directories exist
 RUN mkdir -p storage/app/public/tmp \
     storage/logs \
@@ -66,6 +58,9 @@ RUN mkdir -p storage/app/public/tmp \
     storage/framework/sessions \
     storage/framework/views \
     bootstrap/cache
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
 
 # Set correct permissions
 RUN chown -R www-data:www-data storage bootstrap/cache && \
@@ -85,7 +80,7 @@ COPY ./infra/start-container /usr/local/bin/start-container
 RUN chmod +x /usr/local/bin/start-container
 
 # Expose HTTP port
-EXPOSE 80
+EXPOSE 9000
 
-# Start Nginx + PHP-FPM via supervisord
+# Start Selected Service
 ENTRYPOINT ["start-container"]
