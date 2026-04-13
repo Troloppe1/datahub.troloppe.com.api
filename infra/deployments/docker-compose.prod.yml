@@ -18,15 +18,67 @@ services:
     build:
       context: ../../
       dockerfile: infra/DockerFile
+    image: datahub_api_app:latest
+    command: ["app"]
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file: .env
     restart: unless-stopped
     depends_on:
-      redis:
-        condition: service_healthy
+      - redis
+    networks:
+      - datahub
+    volumes:
+      - storage_tmp:/var/www/html/storage/app/tmp
+
+  scheduler:
+    image: datahub_api_app:latest
+    command: ["scheduler"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+    networks:
+      - datahub
+    restart: unless-stopped
+
+  queue:
+    image: datahub_api_app:latest
+    command: ["queue"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+    networks:
+      - datahub
+    restart: unless-stopped
+
+  migrate:
+    image: datahub_api_app:latest
+    command: ["migrate"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+    networks:
+      - datahub
+    restart: "no"
+
+  optimize:
+    image: datahub_api_app:latest
+    command: ["optimize"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+    networks:
+      - datahub
+    restart: "no"
+
+  nginx:
+    image: nginx:alpine
     ports:
       - "3000:80"
+    volumes:
+      - ../nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
     networks:
       - datahub
 
@@ -35,3 +87,4 @@ networks:
 
 volumes:
   redis-data:
+  storage_tmp:

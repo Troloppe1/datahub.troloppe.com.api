@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('queue:work --max-time=270')->withoutOverlapping()->runInBackground();
-        $schedule->command('app:prune-expired-tmp-image')->runInBackground();
+        $schedule->command('app:prune-expired-tmp-image')->runInBackground()->daily();
         $schedule->command('app:clean-expired-cache')->twiceDaily(3, 15);
     }
 
@@ -22,7 +22,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
