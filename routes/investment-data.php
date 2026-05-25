@@ -10,5 +10,5 @@ Route::controller(InvestmentDataController::class)
         Route::get('listings', 'paginatedListings');
         Route::get('listings/{id}', 'show')
             ->where('id', '[0-9]+'); // Assuming ID is numeric
-
+        Route::get('sectors', 'getInvestmentDataSectors');
     });

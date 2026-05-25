@@ -23,7 +23,7 @@ class PostgresDatahubDbBuilder
      *
      * @return Builder Query builder instance.
      */
-    public function createQueryBuilder(string $table): Builder
+    public function createQueryBuilder(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Contracts\Database\Query\Expression|string $table): Builder
     {
         // Connects to the PostgreSQL database and sets up the query builder for the specified table.
         return $this->dbConn->table($table);

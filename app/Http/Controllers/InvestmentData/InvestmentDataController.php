@@ -13,7 +13,7 @@ class InvestmentDataController extends Controller
     public function paginatedListings(Request $request)
     {
         // Retrieves query parameters with defaults if not provided.
-        $table = $request->query("table", "residential");
+        $sectorId = $request->query("sector_id", 1);
         $limit = $request->query("limit", 10);
         $page = $request->query("page", 1);
         $updatedById = $request->query("updated_by_id");
@@ -22,7 +22,7 @@ class InvestmentDataController extends Controller
 
         return response()->json(
             ...$this->investmentDataListingService->getPaginatedData(
-                $table,
+                $sectorId,
                 $limit,
                 $page,
                 $updatedById,
@@ -35,16 +35,23 @@ class InvestmentDataController extends Controller
     public function show(string $id)
     {
         $view = filter_var(request()->query('view'), FILTER_VALIDATE_BOOLEAN);
-        $sector = request()->query('sector', 'residential');
+        $sectorId = request()->query('sector_id', 1);
         return apiResponse($this
             ->investmentDataListingService
-            ->getInvestmentDataListingById($id, $view, $sector));
+            ->getInvestmentDataListingById($id, $view, $sectorId));
     }
-   
+
     public function showPropertyAmenities(string $propertyId)
     {
         return apiResponse($this
             ->investmentDataListingService
             ->getPropertyAmenitiesById((int)$propertyId));
+    }
+
+    public function getInvestmentDataSectors()
+    {
+        return apiResponse($this
+            ->investmentDataListingService
+            ->getInvestmentDataSectors());
     }
 }
