@@ -1,0 +1,59 @@
+services:
+    app.dev:
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.2
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: "${WWWGROUP}"
+        image: sail-8.2/app
+        container_name: server-datahub
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        ports:
+            - "${APP_PORT:-4000}:80"
+        environment:
+            WWWUSER: "${WWWUSER}"
+            LARAVEL_SAIL: 1
+            DB_HOST: "${DB_HOST}"
+            DB_PORT: "${DB_PORT}"
+            DB_USERNAME: "${DB_USERNAME}"
+            DB_PASSWORD: "${DB_PASSWORD}"
+            DB_DATABASE: "${DB_DATABASE}"
+        volumes:
+            - ".:/var/www/html"
+        networks:
+            - sail
+        depends_on:
+            - mailpit
+            - postgres
+
+    postgres:
+        image: postgres:14
+        container_name: postgres
+        restart: "no"
+        ports:
+            - "5433:5432"
+        environment:
+            POSTGRES_DB: datahub_local
+            POSTGRES_USER: datahub_local
+            POSTGRES_PASSWORD: datahub_local
+            PGDATA: /var/lib/postgresql/data
+        volumes:
+            - pgdata14:/var/lib/postgresql/data
+        networks:
+            - sail
+
+    mailpit:
+        image: axllent/mailpit
+        ports:
+            - "8025:8025"
+            - "1025:1025"
+        networks:
+            - sail
+
+networks:
+    sail:
+        driver: bridge
+
+volumes:
+    pgdata14:
