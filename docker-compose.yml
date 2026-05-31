@@ -11,14 +11,9 @@ services:
             - "host.docker.internal:host-gateway"
         ports:
             - "${APP_PORT:-4000}:80"
-        environment:
-            WWWUSER: "${WWWUSER}"
-            LARAVEL_SAIL: 1
-            DB_HOST: "${DB_HOST}"
-            DB_PORT: "${DB_PORT}"
-            DB_USERNAME: "${DB_USERNAME}"
-            DB_PASSWORD: "${DB_PASSWORD}"
-            DB_DATABASE: "${DB_DATABASE}"
+        env_file:
+            - .env
+            - .env.shared
         volumes:
             - ".:/var/www/html"
         networks:

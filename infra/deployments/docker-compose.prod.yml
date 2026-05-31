@@ -1,7 +1,9 @@
 services:
   redis:
     image: redis:7.2.5-alpine
-    env_file: .env
+    env_file:
+      - .env
+      - .env.shared
     restart: unless-stopped
     networks:
       - datahub
